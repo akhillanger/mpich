@@ -13,6 +13,7 @@
 
 #include "ofi_impl.h"
 #include "mpir_cvars.h"
+#include "ofi_coll_impl.h"
 #include "pmi.h"
 #include "mpidu_shm.h"
 
@@ -278,6 +279,8 @@ static inline int MPIDI_NM_mpi_init_hook(int rank,
     MPIDI_Global.settings.tag_bits                  = MPIR_CVAR_CH4_OFI_TAG_BITS != 20 ? MPIR_CVAR_CH4_OFI_TAG_BITS :
                                                         MPIR_CVAR_OFI_USE_PROVIDER ? MPIDI_OFI_caps_list[MPIDI_OFI_get_set_number(MPIR_CVAR_OFI_USE_PROVIDER)].tag_bits : MPIR_CVAR_CH4_OFI_TAG_BITS;
 
+    /* We want 3 64-bit cache lines for performance */
+    CH4_COMPILE_TIME_ASSERT(sizeof(struct MPIR_Request) <= 192);
     CH4_COMPILE_TIME_ASSERT(offsetof(struct MPIR_Request, dev.ch4.netmod) ==
                             offsetof(MPIDI_OFI_chunk_request, context));
     CH4_COMPILE_TIME_ASSERT(offsetof(struct MPIR_Request, dev.ch4.netmod) ==
@@ -315,7 +318,7 @@ static inline int MPIDI_NM_mpi_init_hook(int rank,
     /*        communication calls, avoiding the OFI provider needing to require */
     /*        a copy.                                                           */
     /*        FI_LOCAL_MR unset:  Note that we do not set FI_LOCAL_MR,          */
-    /*        which means this netmod does not support exchange of memory       */
+    /*        which means this netmod does not support dissem of memory       */
     /*        regions on communication calls.                                   */
     /* caps:     Capabilities required from the provider.  The bits specified   */
     /*           with buffered receive, cancel, and remote complete implements  */
@@ -883,6 +886,32 @@ static inline int MPIDI_NM_mpi_init_hook(int rank,
         MPL_strncpy(MPIR_Process.comm_parent->name, "MPI_COMM_PARENT", MPI_MAX_OBJECT_NAME);
     }
 
+
+    /* Initialize Collective Transports */
+    MPIDI_OFI_COLL_TRANSPORT_MPICH_init();
+    MPIDI_OFI_COLL_TRANSPORT_TRIGGERED_init(MPIDI_OFI_EP_TX_TRG(0),
+                                            MPIDI_OFI_EP_RX_TRG(0));
+    MPIDI_OFI_COLL_TRANSPORT_STUB_init();
+
+    /* Initialize Collective Globals */
+    MPIDI_OFI_COLL_MPICH_2ARY_init();
+    MPIDI_OFI_COLL_MPICH_2NOMIAL_init();
+    MPIDI_OFI_COLL_MPICH_DISSEM_init();
+
+    MPIDI_OFI_COLL_TRIGGERED_2ARY_init();
+    MPIDI_OFI_COLL_TRIGGERED_2NOMIAL_init();
+    MPIDI_OFI_COLL_TRIGGERED_DISSEM_init();
+
+    MPIDI_OFI_COLL_STUB_2ARY_init();
+    MPIDI_OFI_COLL_STUB_2NOMIAL_init();
+    MPIDI_OFI_COLL_STUB_DISSEM_init();
+
+    MPIDI_OFI_COLL_STUB_STUB_init();
+    MPIDI_OFI_COLL_MPICH_STUB_init();
+
+    /* Initialize the nb collectives queue */
+    TAILQ_INIT(&MPIDI_OFI_COLL_global.head);
+    MPIDI_OFI_COLL_global.progress_fn = MPID_Progress_test;
   fn_exit:
 
     /* -------------------------------- */
