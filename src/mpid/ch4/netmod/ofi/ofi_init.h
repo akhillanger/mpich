@@ -280,6 +280,7 @@ static inline int MPIDI_NM_mpi_init_hook(int rank,
                                                         MPIR_CVAR_OFI_USE_PROVIDER ? MPIDI_OFI_caps_list[MPIDI_OFI_get_set_number(MPIR_CVAR_OFI_USE_PROVIDER)].tag_bits : MPIR_CVAR_CH4_OFI_TAG_BITS;
 
     /* We want 3 64-bit cache lines for performance */
+    /*
     CH4_COMPILE_TIME_ASSERT(sizeof(struct MPIR_Request) <= 192);
     CH4_COMPILE_TIME_ASSERT(offsetof(struct MPIR_Request, dev.ch4.netmod) ==
                             offsetof(MPIDI_OFI_chunk_request, context));
@@ -298,7 +299,7 @@ static inline int MPIDI_NM_mpi_init_hook(int rank,
     CH4_COMPILE_TIME_ASSERT(sizeof(MPIDI_Devreq_t) >= sizeof(MPIDI_OFI_request_t));
     CH4_COMPILE_TIME_ASSERT(sizeof(MPIR_Request) >= sizeof(MPIDI_OFI_win_request_t));
     CH4_COMPILE_TIME_ASSERT(sizeof(MPIR_Context_id_t) * 8 >= MPIDI_OFI_AM_CONTEXT_ID_BITS);
-
+*/
     *tag_ub = (1ULL << MPIDI_OFI_TAG_BITS) - 1;
 
     MPID_Thread_mutex_create(&MPIDI_OFI_THREAD_UTIL_MUTEX, &thr_err);
@@ -887,31 +888,6 @@ static inline int MPIDI_NM_mpi_init_hook(int rank,
     }
 
 
-    /* Initialize Collective Transports */
-    MPIDI_OFI_COLL_TRANSPORT_MPICH_init();
-//    MPIDI_OFI_COLL_TRANSPORT_TRIGGERED_init(MPIDI_OFI_EP_TX_TRG(0),
-//                                            MPIDI_OFI_EP_RX_TRG(0));
-    MPIDI_OFI_COLL_TRANSPORT_STUB_init();
-
-    /* Initialize Collective Globals */
-    MPIDI_OFI_COLL_MPICH_KARY_init();
-    MPIDI_OFI_COLL_MPICH_KNOMIAL_init();
-    MPIDI_OFI_COLL_MPICH_DISSEM_init();
-
-//    MPIDI_OFI_COLL_TRIGGERED_KARY_init();
-//    MPIDI_OFI_COLL_TRIGGERED_KNOMIAL_init();
-//    MPIDI_OFI_COLL_TRIGGERED_DISSEM_init();
-
-    MPIDI_OFI_COLL_STUB_KARY_init();
-    MPIDI_OFI_COLL_STUB_KNOMIAL_init();
-    MPIDI_OFI_COLL_STUB_DISSEM_init();
-
-    MPIDI_OFI_COLL_STUB_STUB_init();
-    MPIDI_OFI_COLL_MPICH_STUB_init();
-
-    /* Initialize the nb collectives queue */
-    TAILQ_INIT(&MPIDI_OFI_COLL_global.head);
-    MPIDI_OFI_COLL_global.progress_fn = MPID_Progress_test;
   fn_exit:
 
     /* -------------------------------- */
