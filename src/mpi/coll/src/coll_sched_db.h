@@ -39,6 +39,7 @@ enum {
 /*enumerator for collective transports*/
 enum {
     MPICH_,
+    STUB_,
 };
 
 typedef void (*MPIC_sched_free_fn) (void *);

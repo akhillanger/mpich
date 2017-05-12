@@ -29,8 +29,6 @@ static inline int MPIDI_NM_mpi_comm_create_hook(MPIR_Comm * comm)
     MPIDI_OFI_map_create(&MPIDI_OFI_COMM(comm).huge_recv_counters);
     MPIDI_OFI_index_allocator_create(&MPIDI_OFI_COMM(comm).win_id_allocator,0);
     MPIDI_OFI_index_allocator_create(&MPIDI_OFI_COMM(comm).rma_id_allocator,1);
-    MPIDI_OFI_COMM(comm).issued_collectives = 0;
-    MPIDI_OFI_COMM(comm).use_tag = 0;
     mpi_errno = MPIDI_CH4U_init_comm(comm);
 
     /* no connection for non-dynamic or non-root-rank of intercomm */

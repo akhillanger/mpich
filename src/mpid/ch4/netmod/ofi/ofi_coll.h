@@ -14,20 +14,6 @@
 #include "ofi_impl.h"
 #include "ofi_coll_impl.h"
 
-static inline int MPIDI_OFI_cycle_algorithm(MPIR_Comm *comm_ptr, int pick[], int num) {
-    if(comm_ptr->comm_kind == MPIR_COMM_KIND__INTERCOMM)
-        return 0;
-
-#if 1
-    int idx;
-    MPIDI_OFI_COMM(comm_ptr).issued_collectives++;
-    idx = MPIDI_OFI_COMM(comm_ptr).issued_collectives%num;
-    return pick[idx];
-#else
-    return 0;
-#endif
-}
-
 #undef FUNCNAME
 #define FUNCNAME MPIDI_NM_mpi_barrier
 #undef FCNAME
