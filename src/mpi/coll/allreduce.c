@@ -69,7 +69,6 @@ cvars:
         0 - MPIR_allreduce
         1 - KNOMIAL_allreduce
         2 - KARY_allreduce
-        3 - RECEXCH_allreduce
 
 === END_MPI_T_CVAR_INFO_BLOCK ===
 */
@@ -324,8 +323,8 @@ int MPIR_Allreduce_intra (
 #ifdef HAVE_EXT_COLL
         {
 
-            int valid_coll[] = {1,2,3,4};
-            int use_coll = (MPIR_CVAR_USE_ALLREDUCE < 0) ? MPIR_Coll_cycle_algorithm(comm_ptr, valid_coll, 3) : MPIR_CVAR_USE_ALLREDUCE;
+            int valid_coll[] = {1,2};
+            int use_coll = (MPIR_CVAR_USE_ALLREDUCE < 0) ? MPIR_Coll_cycle_algorithm(comm_ptr, valid_coll, 2) : MPIR_CVAR_USE_ALLREDUCE;
 
             switch (use_coll){
                 case 0:
@@ -342,17 +341,7 @@ int MPIR_Allreduce_intra (
                                                     &(MPIC_COMM(comm_ptr)->mpich_kary), errflag, 2);
                     goto fn_exit;
                     break;
-                case 3:
-                    mpi_errno = MPIC_MPICH_RECEXCH_allreduce(sendbuf, recvbuf, count,
-                                                    datatype, op,
-                                                    &(MPIC_COMM(comm_ptr)->mpich_recexch), errflag);
-                    goto fn_exit;
-                    break;
-                case 4:
-                    mpi_errno = MPIC_MPICH_DISSEM_allreduce(sendbuf, recvbuf, count,
-                                                    datatype, op,
-                                                    &(MPIC_COMM(comm_ptr)->mpich_dissem), errflag);
-                    goto fn_exit;
+                default:
                     break;
             }
         }
