@@ -48,7 +48,7 @@ static inline int COLL_init()
 }
 
 
-static inline int COLL_comm_init(COLL_comm_t * comm, int id, int* tag, int rank, int size)
+static inline int COLL_comm_init(COLL_comm_t * comm, int id, int *tag, int rank, int size)
 {
     comm->id = id;
     comm->curTag = tag;
@@ -63,88 +63,123 @@ static inline int COLL_comm_cleanup(COLL_comm_t * comm)
 }
 
 
-static inline int COLL_allreduce(const void  *sendbuf,
-                                 void        *recvbuf,
-                                 int          count,
-                                 COLL_dt_t    datatype,
-                                 COLL_op_t    op,
-                                 COLL_comm_t *comm,
-                                 int per_nbr_buffer,
-                                 int         *errflag)
+static inline int COLL_allreduce(const void *sendbuf,
+                                 void *recvbuf,
+                                 int count,
+                                 COLL_dt_t datatype,
+                                 COLL_op_t op, COLL_comm_t * comm, int per_nbr_buffer, int *errflag)
 {
-    int rc=0;
-    /*Check if schedule already exists*/
-    int k=MPIR_CVAR_ALLRED_RECEXCH_KVAL;
-    /*generate the key to search this schedule*/
-    COLL_args_t coll_args = {.algo=COLL_NAME, .tsp=TRANSPORT_NAME, .nargs=6,\
-            .args={.allreduce={.sbuf=sendbuf,.rbuf=recvbuf,.count=count,.dt_id=(int)datatype,.op_id=(int)op,.comm_id=comm->id}}};
-    /*search for schedule*/
-    int                tag = (*comm->curTag)++;
-    COLL_sched_t *s = MPIC_get_sched((MPIC_coll_args_t)coll_args);
-    if(s==NULL){/*sched does not exist*/
-        if(0) fprintf(stderr, "schedule does not exist\n");
-        s = (COLL_sched_t*)TSP_allocate_mem(sizeof(COLL_sched_t));
+    int rc = 0;
+    /*Check if schedule already exists */
+    int k = MPIR_CVAR_ALLRED_RECEXCH_KVAL;
+    /*generate the key to search this schedule */
+    COLL_args_t coll_args = {.algo = COLL_NAME,.nargs = 5,
+        .args = {.allreduce =
+                    {.sbuf = sendbuf,
+                     .rbuf = recvbuf,
+                     .count = count,
+                     .dt_id = (int) datatype,
+                     .op_id = (int) op}}
+    };
+    int is_new = 0;
+    int tag = (*comm->curTag)++;
 
-        COLL_sched_init(s,tag);
-        rc = COLL_sched_allreduce_recexch(sendbuf,recvbuf,count,
-                                          datatype,op,tag,comm,k,s,per_nbr_buffer,1);
-        MPIC_add_sched((MPIC_coll_args_t)coll_args, (void*)s, COLL_sched_free);
-    }else{
-        COLL_sched_reset(s, tag);
-        if(0) fprintf(stderr, "schedule already exists\n");
+    TSP_sched_t *s = TSP_get_schedule( &comm->tsp_comm, (void*) &coll_args,
+            sizeof(COLL_args_t), tag, &is_new);
+    if (is_new) {
+        rc = COLL_sched_allreduce_recexch(sendbuf, recvbuf, count,
+                                          datatype, op, tag, comm,
+                                          k, s, per_nbr_buffer, 1);
+        TSP_save_schedule(&comm->tsp_comm, (void*)&coll_args,
+                        sizeof(COLL_args_t), (void *) s);
     }
     COLL_sched_kick(s);
     return rc;
 }
 
-static inline int COLL_iallreduce(const void  *sendbuf,
-                                  void        *recvbuf,
-                                  int          count,
-                                  COLL_dt_t    datatype,
-                                  COLL_op_t    op,
-                                  COLL_comm_t *comm,
-                                  COLL_req_t  *request)
+static inline int COLL_iallreduce(const void *sendbuf,
+                                  void *recvbuf,
+                                  int count,
+                                  COLL_dt_t datatype,
+                                  COLL_op_t op,
+                                  COLL_comm_t * comm,
+                                  COLL_req_t * request, int per_nbr_buffer)
 {
-#if 0 /*The code needs to be tested*/
-    COLL_sched_t  *s;
-    int                  done = 0;
-    int                  tag = (*comm->curTag)++;
-    COLL_sched_init_nb(&s,request);
-    TSP_addref_op(&op->tsp_op,1);
-    TSP_addref_dt(&datatype->tsp_dt,1);
-    COLL_sched_allreduce_recexch(sendbuf,recvbuf,count,datatype,
-                                    op,tag,comm,s,0);
+    int rc = 0;
+    /*Check if schedule already exists */
+    int k = MPIR_CVAR_ALLRED_RECEXCH_KVAL;
+    /*generate the key to search this schedule */
+    COLL_args_t coll_args = {.algo = COLL_NAME,.nargs = 5,
+        .args = {.allreduce =
+                    {.sbuf = sendbuf,
+                     .rbuf = recvbuf,
+                     .count = count,
+                     .dt_id = (int) datatype,
+                     .op_id = (int) op}}
+    };
+    int is_new = 0;
+    int tag = (*comm->curTag)++;
+
+    TSP_sched_t *s = TSP_get_schedule( &comm->tsp_comm, (void*) &coll_args,
+            sizeof(COLL_args_t), tag, &is_new);
+    if (is_new) {
+        /*FIXME: Refounts should be inside*/
+        rc = COLL_sched_allreduce_recexch(sendbuf, recvbuf, count,
+                                          datatype, op, tag, comm,
+                                          k, s, per_nbr_buffer, 1);
+        TSP_save_schedule(&comm->tsp_comm, (void*)&coll_args,
+                        sizeof(COLL_args_t), (void *) s);
+    }
+    COLL_sched_kick_nb(s, request);
+    return rc;
+
+#if 0   /*The code needs to be tested */
+    COLL_sched_t *s;
+    int done = 0;
+    int tag = (*comm->curTag)++;
+    COLL_sched_init_nb(&s, request);
+    TSP_addref_op(&op->tsp_op, 1);
+    TSP_addref_dt(&datatype->tsp_dt, 1);
+    COLL_sched_allreduce_recexch(sendbuf, recvbuf, count, datatype, op, tag, comm, s, 0);
     TSP_fence(&s->tsp_sched);
-    TSP_addref_op_nb(&op->tsp_op,0,&s->tsp_sched);
-    TSP_addref_dt_nb(&datatype->tsp_dt,0,&s->tsp_sched);
+    TSP_addref_op_nb(&op->tsp_op, 0, &s->tsp_sched);
+    TSP_addref_dt_nb(&datatype->tsp_dt, 0, &s->tsp_sched);
     TSP_fence(&s->tsp_sched);
     TSP_sched_commit(&s->tsp_sched);
     done = COLL_sched_kick_nb(s);
-    if(1 || !done) {
-        TAILQ_INSERT_TAIL(&COLL_progress_global.head,&request->elem,list_data);
-    } else
+    if (1 || !done) {
+        TAILQ_INSERT_TAIL(&COLL_progress_global.head, &request->elem, list_data);
+    }
+    else
         TSP_free_mem(s);
 #endif
-    return 0;
-}
-
-static inline int COLL_barrier(COLL_comm_t *comm,
-                               int         *errflag,
-                               int          k)
-{
-    int                rc;
-    COLL_sched_t s;
-    int                tag = (*comm->curTag)++;
-    COLL_sched_init(&s, tag);
-    void *recvbuf;
-    rc = COLL_sched_allreduce_recexch(MPI_IN_PLACE,recvbuf,0,
-                                          MPI_BYTE,MPI_SUM,tag,comm,k,&s,0,1);
-    COLL_sched_kick(&s);
     return rc;
 }
 
-/*Unnecessary unless we non-blocking colls here*/
-static inline int COLL_kick(COLL_queue_elem_t * elem)
+static inline int COLL_barrier(COLL_comm_t * comm, int *errflag, int k)
 {
-    return 0;
+    int rc = 0;
+    COLL_args_t coll_args = {.algo = COLL_NAME,.nargs = 1,
+        .args = {.barrier = {.k = k}}
+    };
+
+    int is_new = 0;
+    int tag = (*comm->curTag)++;
+    void *recvbuf=NULL;
+
+    TSP_sched_t *s = TSP_get_schedule( &comm->tsp_comm,
+                    (void*) &coll_args, sizeof(COLL_args_t), tag, &is_new);
+
+    if (is_new) {
+        rc = COLL_sched_allreduce_recexch(MPI_IN_PLACE, recvbuf, 0,
+                                      MPI_BYTE, MPI_SUM, tag,
+                                      comm, k, &s, 0, 1);
+
+        TSP_save_schedule(&comm->tsp_comm, (void*)&coll_args,
+                        sizeof(COLL_args_t), (void *) s);
+    }
+
+    COLL_sched_kick(s);
+    return rc;
 }
+

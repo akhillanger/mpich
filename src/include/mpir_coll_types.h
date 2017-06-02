@@ -22,18 +22,29 @@ struct MPIR_Op;
 #define COLL_queue_elem_t MPIC_queue_elem_t
 #define COLL_progress_global MPIC_progress_global
 
-#define MPIC_DT_DECL MPIC_dt_t ch4_coll;
-#define MPIC_OP_DECL MPIC_op_t ch4_coll;
-#define MPIC_COMM_DECL MPIC_comm_t ch4_coll;
-#define MPIC_REQ_DECL MPIC_req_t ch4_coll;
+#define MPIC_DT_DECL MPIC_dt_t coll;
+#define MPIC_OP_DECL MPIC_op_t coll;
+#define MPIC_COMM_DECL MPIC_comm_t coll;
+#define MPIC_REQ_DECL MPIC_req_t coll;
 
-#define MPIC_COMM(comm) (&((comm)->ch4_coll))
-#define MPIC_REQ(req) (&((req)->ch4_coll))
+#define MPIC_COMM(comm) (&((comm)->coll))
+#define MPIC_REQ(req) (&((req)->coll))
+
+#ifdef MPIC_DEBUG
+#define MPIC_DBG(...) do {MPL_DBG_MSG_FMT(MPIR_DBG_COLL,VERBOSE,(MPL_DBG_FDEST,__VA_ARGS__));}while(0)
+#else
+#define MPIC_DBG(...)
+#endif
 
 typedef struct COLL_queue_elem_t {
     TAILQ_ENTRY(COLL_queue_elem_t) list_data;
     int (*kick_fn) (struct COLL_queue_elem_t *);
 } COLL_queue_elem_t;
+
+typedef struct MPIC_req_t {
+    COLL_queue_elem_t elem;
+    void *sched;
+} MPIC_req_t;
 
 typedef struct MPIC_progress_global_t {
     TAILQ_HEAD(COLL_queue_t, COLL_queue_elem_t) head;
@@ -42,6 +53,7 @@ typedef struct MPIC_progress_global_t {
 } MPIC_progress_global_t;
 
 
+#include "../mpi/coll/src/coll_sched_db.h"
 /* Coll 'pre'-definitions */
 #include "../mpi/coll/include/types_decl.h"
 
@@ -94,22 +106,5 @@ typedef struct {
 
 extern MPIC_global_t MPIC_global_instance;
 
-typedef union {
-        MPIC_STUB_STUB_req_t stub_stub;
-        MPIC_STUB_KARY_req_t stub_kary;
-        MPIC_STUB_KNOMIAL_req_t stub_knomial;
-        MPIC_STUB_RECEXCH_req_t stub_recexch;
-        MPIC_STUB_DISSEM_req_t stub_dissem;
-        MPIC_MPICH_STUB_req_t mpich_stub;
-        MPIC_MPICH_KARY_req_t mpich_kary;
-        MPIC_MPICH_KNOMIAL_req_t mpich_knomial;
-        MPIC_MPICH_RECEXCH_req_t mpich_recexch;
-        MPIC_MPICH_DISSEM_req_t mpich_dissem;
-        MPIC_BMPICH_KARY_req_t bmpich_kary;
-        MPIC_BMPICH_KNOMIAL_req_t bmpich_knomial;
-} MPIC_req_t;
-
-
-#include "../mpi/coll/src/coll_sched_db.h"
 
 #endif /* MPIDI_CH4_PRE_H_INCLUDED */
