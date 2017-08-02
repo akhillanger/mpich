@@ -476,11 +476,11 @@ MPIC_INLINE int MPIC_MPICH_wait(MPIC_MPICH_sched_t * sched)
     int wait_id;
 
     MPIC_DBG("Scheduling a TSP_wait\n");
-    sched->last_wait = sched->total;
     /* wait operation is an extension to fence, so we can resuse the fence call */
     wait_id = MPIC_MPICH_fence(sched);
     /* change the vertex kind from FENCE to WAIT */
     sched->vtcs[wait_id].kind = MPIC_MPICH_KIND_WAIT;
+    sched->last_wait = wait_id;
     return wait_id;
 }
 
