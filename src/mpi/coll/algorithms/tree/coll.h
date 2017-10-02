@@ -46,6 +46,8 @@ MPIC_INLINE int COLL_comm_init(COLL_comm_t * comm, int *tag_ptr, int rank, int c
 MPIC_INLINE int COLL_comm_cleanup(COLL_comm_t * comm)
 {
     TSP_comm_cleanup(&comm->tsp_comm);
+    COLL_tree_free (&comm->tree_comm.tree);
+
     return 0;
 }
 

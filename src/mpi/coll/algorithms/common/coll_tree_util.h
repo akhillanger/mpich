@@ -55,14 +55,14 @@ MPIC_INLINE int COLL_setdigit(int k, int number, int digit, int newdigit)
 /* utility function to add a child to COLL_tree_t data structure */
 MPIC_INLINE void COLL_tree_add_child(COLL_tree_t * t, int rank)
 {
-    if (t->numRanges > 0 && t->children[t->numRanges - 1].endRank == rank - 1)
-        t->children[t->numRanges - 1].endRank = rank;
-    else {
-        t->numRanges++;
-        MPIC_Assert(t->numRanges < COLL_MAX_TREE_BREADTH);
-        t->children[t->numRanges - 1].startRank = rank;
-        t->children[t->numRanges - 1].endRank = rank;
+    if(t->num_children + 1 > t->max_children){
+       int* old_children = t->children;
+       t->children = (int*) MPL_malloc(sizeof(int) * 2 * t->max_children);
+       t->max_children = 2 * t->max_children;
+       memcpy(t->children, old_children, sizeof(int)*t->max_children);
+       MPL_free(old_children);
     }
+    t->children[t->num_children++] = rank;
 }
 
 /* Function to generate kary tree information for rank 'rank' and store it in COLL_tree_t data structure */
@@ -72,8 +72,10 @@ MPIC_INLINE void COLL_tree_kary_init(int rank, int nranks, int k, int root, COLL
 
     ct->rank = rank;
     ct->nranks = nranks;
-    ct->numRanges = 0;
+    ct->num_children = 0;
     ct->parent = -1;
+    ct->children = (int*) MPL_malloc(sizeof(int)*k);
+    ct->max_children = k;
 
     if (nranks <= 0)
         return;
@@ -99,7 +101,7 @@ MPIC_INLINE void COLL_tree_knomial_init(int rank, int nranks, int k, int root, C
 
     ct->rank = rank;
     ct->nranks = nranks;
-    ct->numRanges = 0;
+    ct->num_children = 0;
     ct->parent = -1;
 
     if (nranks <= 0)
@@ -115,6 +117,8 @@ MPIC_INLINE void COLL_tree_knomial_init(int rank, int nranks, int k, int root, C
         tmp /= k;
     }
 
+    ct->children = (int*) MPL_malloc(sizeof(int)*(maxtime)*(k-1));
+    ct->max_children = maxtime*(k-1);
     time = 0;
     parent = -1;                     /* root has no parent */
     current_rank = 0;                /* start at root of the tree */
