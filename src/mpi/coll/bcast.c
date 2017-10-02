@@ -52,8 +52,9 @@ cvars:
 /*Broadacst algorithms enumerator*/
 enum {
     BCAST_DEFAULT = 0,
-    BCAST_TREE_KNOMIAL_NONBLOCKING,
-    BCAST_TREE_KARY_NONBLOCKING
+    BCAST_TREE_KNOMIAL_1_NONBLOCKING,
+    BCAST_TREE_KARY_NONBLOCKING,
+    BCAST_TREE_KNOMIAL_2_NONBLOCKING,
 };
 
 /* -- Begin Profiling Symbol Block for routine MPI_Bcast */
@@ -91,7 +92,7 @@ int MPIR_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPIR_Co
         case BCAST_DEFAULT:
             mpi_errno = MPIC_DEFAULT_Bcast(buffer, count, datatype, root, comm_ptr, errflag);
             break;
-        case BCAST_TREE_KNOMIAL_NONBLOCKING:
+        case BCAST_TREE_KNOMIAL_1_NONBLOCKING:
             mpi_errno = MPIC_MPICH_TREE_bcast(buffer, count, datatype, root,
                                               &(MPIC_COMM(comm_ptr)->mpich_tree),
                                               (int *) errflag, 0,
@@ -103,6 +104,13 @@ int MPIR_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPIR_Co
                                               &(MPIC_COMM(comm_ptr)->mpich_tree),
                                               (int *) errflag, 1,
                                               MPIR_CVAR_BCAST_KARY_KVAL,
+                                              -1);
+            break;
+        case BCAST_TREE_KNOMIAL_2_NONBLOCKING:
+            mpi_errno = MPIC_MPICH_TREE_bcast(buffer, count, datatype, root,
+                                              &(MPIC_COMM(comm_ptr)->mpich_tree),
+                                              (int *) errflag, 2,
+                                              MPIR_CVAR_BCAST_KNOMIAL_KVAL,
                                               -1);
             break;
         default:
