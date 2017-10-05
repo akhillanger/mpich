@@ -222,6 +222,118 @@ MPIC_INLINE MPIC_MPICH_sched_t *MPIC_MPICH_get_schedule(MPIC_MPICH_comm_t * comm
     return sched;
 }
 
+/* Internal function for optizing order in which tasks are issued */
+MPIC_INLINE void MPIC_MPICH_reorder_tasks (MPIC_MPICH_int_array *list, MPIC_MPICH_vtx_t* vtcs) {
+    int i, j, start_idx, last_idx;
+#ifdef MPIC_DEBUG
+    MPIC_DBG("List before reordering (task_kind): ");
+    for (i=0; i<list->used; i++) {
+        MPIC_DBG ("%d ", vtcs[list->array[i]].kind);
+    }
+    MPIC_DBG ("\n");
+#endif
+    /* for each vertex, reorder the list of outgoing vertices/tasks such that
+     * the tasks are in this order - send/recv tasks followed by datacopy/reduce tasks.
+     * This is done so that sends and recvs are issued before data copy/reduce
+     * makes the cpu busy. Note that the order in which sends and receives are posted 
+     * has to be maintained - the following code takes care of that.
+     * */
+    int dttask_idx=-1; /*data task index */
+    int last_dttask_idx=0;
+    int *array = list->array;
+    /* find the first data task */
+    for(i=0; i<list->used; i++) {
+        while (true && last_dttask_idx < list->used){ /* find dttask_idx */
+          if (dttask_idx != -1) /* already have the dttask_idx */
+            break;
+          if (vtcs[array[last_dttask_idx]].kind == MPIC_MPICH_KIND_DTCOPY || vtcs[array[last_dttask_idx]].kind == MPIC_MPICH_KIND_REDUCE_LOCAL) {
+              dttask_idx=last_dttask_idx;
+          }
+          last_dttask_idx++;
+        }
+        if(dttask_idx == -1) /* no more data tasks implies nothing left to reorder */
+          break;
+        if (i > dttask_idx) {
+            MPL_SWAP(array[i], array[dttask_idx]);
+            dttask_idx=-1;
+        }
+    }
+
+#if 0
+    last_idx = list->used-1; /* everything after location 'idx' in the array is a data copy operation */
+    int *array = list->array;
+    for (j=0; j<last_idx; j++) {
+         /* make sure last index itself is not a data copy/reduce */
+        while (last_idx>j) {
+            if (vtcs[array[last_idx]].kind == MPIC_MPICH_KIND_DTCOPY || vtcs[array[last_idx]].kind == MPIC_MPICH_KIND_REDUCE_LOCAL) {
+                last_idx--;
+            }
+            else
+                break;
+        }
+        if(last_idx == j)
+            break;
+
+        if (vtcs[array[j]].kind == MPIC_MPICH_KIND_DTCOPY || vtcs[array[j]].kind == MPIC_MPICH_KIND_REDUCE_LOCAL) {
+            /* swap vtx_id at index j with vtx_id at index last_idx */
+            MPL_SWAP(array[j], array[last_idx]);
+            /* decrement last_idx to reflect the idx at which the next swap can be done */
+            last_idx--;
+        }
+    }
+#endif
+    /* Put all the sends before the receives */
+    int recv_idx=-1;
+    int last_recv_idx=0;
+    for (i=0; i<list->used; i++) {
+        while (true && last_recv_idx < list->used) { /* find the first recv that has not been swapped yet */
+            if (recv_idx != -1)
+                break;
+            if (vtcs[array[last_recv_idx]].kind == MPIC_MPICH_KIND_RECV) {
+                recv_idx = last_recv_idx;
+            }
+            last_recv_idx++;
+        }
+        if (recv_idx==-1) /* no more recv tasks */
+            break;
+        if (i > recv_idx && vtcs[array[i]].kind == MPIC_MPICH_KIND_SEND) { /* this is a send task and occurs after recv */
+            MPL_SWAP(array[i], array[recv_idx]);
+            recv_idx=-1;
+        }
+    }
+#if 0
+    start_idx = 0;
+    last_idx = list->used-1;
+    while (start_idx < last_idx){
+        bool recv_found=false;
+        bool send_found=false;
+        if (vtcs[array[start_idx]].kind == MPIC_MPICH_KIND_RECV)
+            recv_found=true;
+        else
+            start_idx++;
+
+        if (vtcs[array[last_idx]].kind == MPIC_MPICH_KIND_SEND || vtcs[array[last_idx]].kind == MPIC_MPICH_KIND_MULTICAST)
+            send_found=true;
+        else
+            last_idx--;
+
+        if (recv_found && send_found) { /* swap */
+            MPL_SWAP(array[start_idx], array[last_idx]);
+            start_idx++;
+            last_idx--;
+        }
+    }
+#endif 
+
+#ifdef MPIC_DEBUG
+    MPIC_DBG("List after reordering (task_kind): ");
+    for (i=0; i<list->used; i++) {
+        MPIC_DBG ("%d ", vtcs[list->array[i]].kind);
+    }
+    MPIC_DBG ("\n");
+#endif
+}
+
 /* Internal transport function to add list of integers to an integer array (MPIC_MPICH_int_array)*/
 MPIC_INLINE void MPIC_MPICH_add_elems_int_array(MPIC_MPICH_int_array * in, int n_elems, int *elems)
 {
@@ -265,6 +377,16 @@ MPIC_INLINE void MPIC_MPICH_sched_commit(MPIC_MPICH_sched_t * sched)
         if (vtx->invtcs.used == 0) { /*if no incoming edge, this is a start vtx */
             MPIC_MPICH_add_elems_int_array (start_vtcs, 1, &i);
         }
+    }
+
+    /* reorder them for optimal issuing order */
+    MPIC_MPICH_reorder_tasks (start_vtcs, vtcs);
+
+    /* Now reorder the list of outgoing vertices for every vertex in the graph */
+    for (i=0; i<sched->total; i++) {
+        MPIC_MPICH_vtx_t *vtx = &sched->vtcs[i];
+        MPIC_MPICH_int_array *outvtcs = &vtx->outvtcs;
+        MPIC_MPICH_reorder_tasks (outvtcs, vtcs);
     }
 
 #ifdef MPIC_DEBUG
@@ -1041,6 +1163,7 @@ static inline void MPIC_MPICH_issue_vtx(int vtxid, MPIC_MPICH_vtx_t * vtxp,
                 vtxp->nbargs.reduce_local.flags & MPIC_FLAG_REDUCE_L) {
                 MPIC_DBG("Left reduction vtxp->nbargs.reduce_local.flags %ld \n",
                          vtxp->nbargs.reduce_local.flags);
+                MPIC_DBG("reduction addresses: %p, %p\n", (const void *) vtxp->nbargs.reduce_local.inbuf, (void *) vtxp->nbargs.reduce_local.inoutbuf);
                 MPIR_Reduce_local_impl((const void *) vtxp->nbargs.reduce_local.inbuf,
                                        (void *) vtxp->nbargs.reduce_local.inoutbuf,
                                        vtxp->nbargs.reduce_local.count,
