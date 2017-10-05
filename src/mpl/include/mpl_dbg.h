@@ -92,6 +92,7 @@
         MPL_dbg_outevent(__FILE__, __LINE__, _class, 0, "%s", _s);      \
     }
 
+#define MPIC_DEBUG
 #else
 #define MPL_DBG_SELECTED(_class,_level) 0
 #define MPL_DBG_MSG(_class,_level,_string)
