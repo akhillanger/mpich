@@ -40,6 +40,7 @@ struct MPIR_Op;
 #define MPIC_INLINE MPL_STATIC_INLINE_PREFIX
 #endif
 
+
 #include "coll_sched_db.h"
 
 /* Queue element data structure in collectives queue.
@@ -71,9 +72,11 @@ typedef struct {
     MPIC_STUB_STUB_comm_t stub_stub;
     MPIC_STUB_TREE_comm_t stub_tree;
     MPIC_STUB_RING_comm_t stub_ring;
+    MPIC_STUB_DISSEM_comm_t stub_dissem;
     MPIC_MPICH_STUB_comm_t mpich_stub;
     MPIC_MPICH_TREE_comm_t mpich_tree;
     MPIC_MPICH_RING_comm_t mpich_ring;
+    MPIC_MPICH_DISSEM_comm_t mpich_dissem;
 
 } MPIC_comm_t;
 
@@ -85,9 +88,11 @@ typedef struct {
     MPIC_STUB_STUB_global_t stub_stub;
     MPIC_STUB_TREE_global_t stub_tree;
     MPIC_STUB_RING_global_t stub_ring;
+    MPIC_STUB_DISSEM_global_t stub_dissem;
     MPIC_MPICH_STUB_global_t mpich_stub;
     MPIC_MPICH_TREE_global_t mpich_tree;
     MPIC_MPICH_RING_global_t mpich_ring;
+    MPIC_MPICH_DISSEM_global_t mpich_dissem;
 } MPIC_global_t;
 
 extern MPIC_global_t MPIC_global_instance;
