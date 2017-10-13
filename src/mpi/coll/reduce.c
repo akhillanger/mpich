@@ -38,6 +38,16 @@ cvars:
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
         Radix k for tree based reduce
+
+    - name        : MPIR_CVAR_REDUCE_TREE_SEGSIZE
+      category    : COLLECTIVE
+      type        : int
+      default     : -1
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : >-
+        Segment size (in bytes) for pipelining in tree based reduce algorithms
 === END_MPI_T_CVAR_INFO_BLOCK ===
 */
 
@@ -93,7 +103,7 @@ int MPIR_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype data
                                                &(MPIC_COMM(comm_ptr)->mpich_tree),
                                                (int *) errflag, 0,
                                                MPIR_CVAR_REDUCE_TREE_KVAL,
-                                               -1,
+                                               MPIR_CVAR_REDUCE_TREE_SEGSIZE,
                                                0);
             break;
         case REDUCE_TREE_KNOMIAL_BUFFER_PER_CHILD:
@@ -102,7 +112,7 @@ int MPIR_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype data
                                                &(MPIC_COMM(comm_ptr)->mpich_tree),
                                                (int *) errflag, 0,
                                                MPIR_CVAR_REDUCE_TREE_KVAL,
-                                               -1,
+                                               MPIR_CVAR_REDUCE_TREE_SEGSIZE,
                                                1);
             break;
         case REDUCE_TREE_KARY_SINGLE_BUFFER:
@@ -111,7 +121,7 @@ int MPIR_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype data
                                                &(MPIC_COMM(comm_ptr)->mpich_tree),
                                                (int *) errflag, 1,
                                                MPIR_CVAR_REDUCE_TREE_KVAL,
-                                               -1,
+                                               MPIR_CVAR_REDUCE_TREE_SEGSIZE,
                                                0);
             break;
         case REDUCE_TREE_KARY_BUFFER_PER_CHILD:
@@ -120,7 +130,7 @@ int MPIR_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype data
                                                &(MPIC_COMM(comm_ptr)->mpich_tree),
                                                (int *) errflag, 1,
                                                MPIR_CVAR_REDUCE_TREE_KVAL,
-                                               -1,
+                                               MPIR_CVAR_REDUCE_TREE_SEGSIZE,
                                                1);
             break;
         case REDUCE_TREE_KNOMIAL_2_SINGLE_BUFFER:
@@ -129,7 +139,7 @@ int MPIR_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype data
                                                &(MPIC_COMM(comm_ptr)->mpich_tree),
                                                (int *) errflag, 2,
                                                MPIR_CVAR_REDUCE_TREE_KVAL,
-                                               -1,
+                                               MPIR_CVAR_REDUCE_TREE_SEGSIZE,
                                                0);
             break;
         case REDUCE_TREE_KNOMIAL_2_BUFFER_PER_CHILD:
@@ -138,7 +148,7 @@ int MPIR_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype data
                                                &(MPIC_COMM(comm_ptr)->mpich_tree),
                                                (int *) errflag, 2,
                                                MPIR_CVAR_REDUCE_TREE_KVAL,
-                                               -1,
+                                               MPIR_CVAR_REDUCE_TREE_SEGSIZE,
                                                1);
             break;
         default:
