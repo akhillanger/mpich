@@ -35,6 +35,10 @@ for algo_id in ${algo_ids}; do
         ext_coll_tests+="bcasttest 10 ${env} env=MPIR_CVAR_BCAST_TREE_SEGSIZE=4096${nl}"
     done
 done
+
+#bcast ring algorithm test
+ext_coll_tests+="bcasttest 10 env=MPIR_CVAR_BCAST_RING_SEGSIZE=4096 env=MPIR_CVAR_USE_BCAST=4${nl}"
+
 # Allreduce tests
 algo_ids="1 2"
 for algo_id in ${algo_ids}; do
