@@ -1387,7 +1387,8 @@ MPIC_INLINE void MPIC_MPICH_free_buffers(MPIC_MPICH_sched_t * sched)
     for (i = 0; i < sched->buf_array.used; i++) {
         MPIC_MPICH_free_mem(sched->buf_array.array[i]);
     }
-    MPIC_MPICH_free_mem(sched->buf_array.array);
+    if(sched->buf_array.size!=0)
+        MPIC_MPICH_free_mem(sched->buf_array.array);
 
     /* free each vtx and then the list of vtcs */
     for (i = 0; i < sched->total; i++) {
