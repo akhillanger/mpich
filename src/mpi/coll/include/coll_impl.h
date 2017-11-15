@@ -12,6 +12,12 @@
 #ifndef MPIR_COLL_IMPL_H_INCLUDED
 #define MPIR_COLL_IMPL_H_INCLUDED
 
+#include "stub_tsp.h"
+#include "generic_tsp.h"
+
+#include "../algorithms/stub/impl.h"
+#include "../algorithms/tree/impl.h"
+
 /* Enumerate the list of algorithms */
 typedef enum MPIR_Allgather_alg_intra_t {
     MPIR_ALLGATHER_ALG_INTRA_AUTO,
@@ -113,7 +119,9 @@ typedef enum MPIR_Bcast_alg_intra_t {
     MPIR_BCAST_ALG_INTRA_AUTO,
     MPIR_BCAST_ALG_INTRA_BINOMIAL,
     MPIR_BCAST_ALG_INTRA_SCATTER_DOUBLING_ALLGATHER,
-    MPIR_BCAST_ALG_INTRA_SCATTER_RING_ALLGATHER
+    MPIR_BCAST_ALG_INTRA_SCATTER_RING_ALLGATHER,
+    MPIR_BCAST_ALG_INTRA_GENERIC_TREE_KNOMIAL_NB,
+    MPIR_BCAST_ALG_INTRA_GENERIC_TREE_KARY_NB
 } MPIR_Bcast_alg_intra_t;
 extern int MPIR_Bcast_alg_intra_choice;
 
@@ -557,6 +565,22 @@ typedef enum MPIR_Scatterv_alg_inter_t {
 } MPIR_Scatterv_alg_inter_t;
 extern int MPIR_Scatterv_alg_inter_choice;
 
+/* Function to initialze communicators for collectives */
+int MPIR_COLL_comm_init(MPIR_Comm *comm);
+
+/* Function to initialize communicators for collectives to NULL.
+   This is needed for light weight initialization of temporary
+   communicators in CH3 for setting up dynamic communicators */
+int MPIR_COLL_comm_init_null(MPIR_Comm *comm);
+
+/* Function to cleanup any communicators for collectives */
+int MPIR_COLL_comm_cleanup(MPIR_Comm *comm);
+
+/* Hook for any collective algorithms related initialization */
 int MPIR_COLL_init(void);
+
+bool MPIR_COLL_safe_to_block(void);
+
+int MPIR_COLL_finalize(void);
 
 #endif /* MPIR_COLL_IMPL_H_INCLUDED */

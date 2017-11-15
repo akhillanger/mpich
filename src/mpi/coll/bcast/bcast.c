@@ -12,6 +12,16 @@
 === BEGIN_MPI_T_CVAR_INFO_BLOCK ===
 
 cvars:
+    - name        : MPIR_CVAR_BCAST_TREE_KVAL
+      category    : COLLECTIVE
+      type        : int
+      default     : 2
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : >-
+        k value for tree based bcast - MPIR_GENERIC_TREE_Bcast
+
     - name        : MPIR_CVAR_BCAST_MIN_PROCS
       category    : COLLECTIVE
       type        : int
@@ -106,6 +116,8 @@ cvars:
         binomial - Force Binomial Tree
         scatter_doubling_allgather - Force Scatter Doubling
         scatter_ring_allgather - Force Scatter Ring
+        generic_tree_kary_nb - Force Generic Tree Kary
+        generic_tree_knomial_nb - Force Generic Tree Knomial
 
     - name        : MPIR_CVAR_BCAST_ALGORITHM_INTER
       category    : COLLECTIVE
@@ -559,6 +571,16 @@ int MPIR_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPIR_Co
                 break;
             case MPIR_BCAST_ALG_INTRA_SCATTER_RING_ALLGATHER:
                 mpi_errno = MPIR_Bcast_scatter_ring_allgather(buffer, count, datatype, root, comm_ptr, errflag);
+                break;
+            case MPIR_BCAST_ALG_INTRA_GENERIC_TREE_KNOMIAL_NB:
+                mpi_errno = MPIR_COLL_GENERIC_tree_bcast_nb (buffer, count, datatype, root,
+                                            comm_ptr, (int*) errflag, TREE_TYPE_KNOMIAL, MPIR_CVAR_BCAST_TREE_KVAL, -1);
+                if (mpi_errno) MPIR_ERR_POP(mpi_errno);
+                break;
+            case MPIR_BCAST_ALG_INTRA_GENERIC_TREE_KARY_NB:
+                mpi_errno = MPIR_COLL_GENERIC_tree_bcast_nb (buffer, count, datatype, root,
+                                            comm_ptr, (int*) errflag, TREE_TYPE_KARY, MPIR_CVAR_BCAST_TREE_KVAL, -1);
+                if (mpi_errno) MPIR_ERR_POP(mpi_errno);
                 break;
             case MPIR_BCAST_ALG_INTRA_AUTO:
                 MPL_FALLTHROUGH;

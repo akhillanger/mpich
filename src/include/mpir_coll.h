@@ -194,6 +194,8 @@ int MPIR_Bcast_generic_inter(void *buffer, int count, MPI_Datatype datatype,
                              int root, MPIR_Comm *comm_ptr, MPIR_Errflag_t *errflag);
 int MPIR_Bcast_inter(void *buffer, int count, MPI_Datatype datatype,
                      int root, MPIR_Comm *comm_ptr, MPIR_Errflag_t *errflag);
+int MPIR_COLL_GENERIC_tree_bcast_nb(void *buffer, int count, MPI_Datatype datatype, int root,
+                    MPIR_Comm *comm, int *errflag, int tree_type, int k, int segsize);
 
 /* Exscan functions */
 int MPIR_Exscan(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype,
@@ -347,6 +349,9 @@ int MPIR_Ireduce_scatter(const void *sendbuf, void *recvbuf, const int *recvcoun
 int MPIR_Ireduce_scatter_block(const void *sendbuf, void *recvbuf, int recvcount, MPI_Datatype datatype, MPI_Op op, MPIR_Comm *comm_ptr, MPI_Request *request);
 int MPIR_Iscan(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPIR_Comm *comm_ptr, MPI_Request *request);
 int MPIR_Iexscan(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPIR_Comm *comm_ptr, MPI_Request *request);
+
+/* functions calls for NBC algorithms */
+int MPIR_COLL_GENERIC_tree_ibcast(void *buffer, int count, MPI_Datatype datatype, int root, MPIR_Comm *comm_ptr, MPI_Request *request, int tree_type, int kval, int segsize);
 
 /* sched functions for NBC */
 int MPIR_Ibarrier_sched(MPIR_Comm *comm_ptr, MPIR_Sched_t s);

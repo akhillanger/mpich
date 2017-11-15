@@ -7,7 +7,8 @@ mpi_sources +=                                  \
 mpi_core_sources +=                        \
     src/mpi/coll/ibcast/ibcast_binomial.c  \
     src/mpi/coll/ibcast/ibcast_flat.c      \
-    src/mpi/coll/ibcast/ibcast_utils.c
+    src/mpi/coll/ibcast/ibcast_utils.c	   \
+    src/mpi/coll/ibcast/ibcast_generic_tree.c
 
 noinst_HEADERS += \
     src/mpi/coll/ibcast/ibcast.h

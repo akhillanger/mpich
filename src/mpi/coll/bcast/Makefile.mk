@@ -10,7 +10,8 @@ mpi_core_sources +=											\
 	src/mpi/coll/bcast/bcast_binomial.c						\
 	src/mpi/coll/bcast/bcast_scatter_doubling_allgather.c	\
 	src/mpi/coll/bcast/bcast_scatter_ring_allgather.c		\
-	src/mpi/coll/bcast/bcast_generic_inter.c
+    src/mpi/coll/bcast/bcast_generic_inter.c				\
+    src/mpi/coll/bcast/bcast_generic_tree.c
 
 noinst_HEADERS += \
     src/mpi/coll/bcast/bcast.h

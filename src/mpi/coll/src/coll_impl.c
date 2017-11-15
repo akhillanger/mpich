@@ -10,6 +10,8 @@
  */
 
 #include "mpiimpl.h"
+#include "queue.h"
+#include "coll_impl.h"
 
 /*
 === BEGIN_MPI_T_CVAR_INFO_BLOCK ===
@@ -126,7 +128,62 @@ int MPIR_Scatterv_alg_inter_choice = MPIR_SCATTERV_ALG_INTER_AUTO;
 int MPIR_Scatter_alg_intra_choice = MPIR_SCATTER_ALG_INTRA_AUTO;
 int MPIR_Scatter_alg_inter_choice = MPIR_SCATTER_ALG_INTER_AUTO;
 
-int MPIR_COLL_init(void) {
+/* Function to initialze communicators for collectives */
+int MPIR_COLL_comm_init(MPIR_Comm *comm)
+{
+    int mpi_errno = MPI_SUCCESS;
+
+    comm->coll.tag = 0;
+
+    /* initialize any stub algo related data structures */
+    MPIR_COLL_stub_comm_init(comm);
+    /* initialize any tree algo related data structures */
+    MPIR_COLL_tree_comm_init(comm);
+
+    /* initialize any transport data structures */
+    MPIR_COLL_STUB_comm_init(comm);
+    MPIR_COLL_GENERIC_comm_init(comm);
+
+    return mpi_errno;
+}
+
+/* Function to initialize communicators for collectives to NULL.
+   This is needed for light weight initialization of temporary
+   communicators in CH3 for setting up dynamic communicators */
+int MPIR_COLL_comm_init_null(MPIR_Comm *comm)
+{
+    int mpi_errno = MPI_SUCCESS;
+
+    /* initialize algorithm communicator data */
+    MPIR_COLL_stub_comm_init_null(comm);
+    MPIR_COLL_tree_comm_init_null(comm);
+
+    /* initialize any transprot communicator data */
+    MPIR_COLL_STUB_comm_init_null(comm);
+    MPIR_COLL_GENERIC_comm_init_null(comm);
+
+    return mpi_errno;
+}
+
+/* Function to cleanup any communicators for collectives */
+int MPIR_COLL_comm_cleanup(MPIR_Comm *comm)
+{
+    int mpi_errno = MPI_SUCCESS;
+
+    /* cleanup all collective communicators */
+    MPIR_COLL_stub_comm_cleanup(comm);
+    MPIR_COLL_tree_comm_cleanup(comm);
+
+    /* cleanup transport data */
+    MPIR_COLL_STUB_comm_cleanup(comm);
+    MPIR_COLL_GENERIC_comm_cleanup(comm);
+
+    return mpi_errno;
+}
+
+/* Hook for any collective algorithms related initialization */
+int MPIR_COLL_init()
+{
     int mpi_errno = MPI_SUCCESS;
 
     /* =========================================================================== */
@@ -244,6 +301,10 @@ int MPIR_COLL_init(void) {
         MPIR_Bcast_alg_intra_choice = MPIR_BCAST_ALG_INTRA_SCATTER_DOUBLING_ALLGATHER;
     else if (0 == strcmp(MPIR_CVAR_BCAST_ALGORITHM_INTRA, "scatter_ring_allgather"))
         MPIR_Bcast_alg_intra_choice = MPIR_BCAST_ALG_INTRA_SCATTER_RING_ALLGATHER;
+    else if (0 == strcmp(MPIR_CVAR_BCAST_ALGORITHM_INTRA, "generic_tree_knomial_nb"))
+        MPIR_Bcast_alg_intra_choice = MPIR_BCAST_ALG_INTRA_GENERIC_TREE_KNOMIAL_NB;
+    else if (0 == strcmp(MPIR_CVAR_BCAST_ALGORITHM_INTRA, "generic_tree_kary_nb"))
+        MPIR_Bcast_alg_intra_choice = MPIR_BCAST_ALG_INTRA_GENERIC_TREE_KARY_NB;
     else
         MPIR_Bcast_alg_intra_choice = MPIR_BCAST_ALG_INTRA_AUTO;
 
@@ -713,6 +774,26 @@ int MPIR_COLL_init(void) {
     else
         MPIR_Scatterv_alg_inter_choice = MPIR_SCATTERV_ALG_INTER_AUTO;
 
+    /* initialize transports */
+    MPIR_COLL_STUB_init();
+    MPIR_COLL_GENERIC_init();
+
+    /* initialize algorithms */
+    MPIR_COLL_stub_init();
+    MPIR_COLL_tree_init();
+
     return mpi_errno;
 }
 
+/* Function used by CH3 progress engine to decide whether to
+ * block for a recv operation */
+bool MPIR_COLL_safe_to_block() {
+    return MPIR_COLL_GENERIC_sched_are_pending()==false;
+}
+
+int MPIR_COLL_finalize()
+{
+    int mpi_errno = MPI_SUCCESS;
+    /* nothing to do as of now */
+    return mpi_errno;
+}

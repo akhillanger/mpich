@@ -4,6 +4,8 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+#include "mpiimpl.h"
+
 #ifndef COLLUTIL_H_INCLUDED
 #define COLLUTIL_H_INCLUDED
 
@@ -42,6 +44,49 @@ static inline int MPIU_is_pof2(int val, int *ceil_pof2)
         return 1;
     else
         return 0;
+}
+
+/* Routine to calculate log_k of an integer */
+static inline int MPIU_ilog(int k, int number)
+{
+    int i = 1, p = k - 1;
+
+    for (; p - 1 < number; i++)
+        p *= k;
+
+    return i;
+}
+
+/* Routing to calculate base^exp for integers */
+static inline int MPIU_ipow(int base, int exp)
+{
+    int result = 1;
+
+    while (exp) {
+        if (exp & 1)
+            result *= base;
+
+        exp >>= 1;
+        base *= base;
+    }
+
+    return result;
+}
+
+/* get the number at 'digit'th location in base k representation of 'number' */
+static inline int MPIU_getdigit(int k, int number, int digit)
+{
+    return (number / MPIU_ipow(k, digit)) % k;
+}
+
+/* set the number at 'digit'the location in base k representation of 'number' to newdigit */
+static inline int MPIU_setdigit(int k, int number, int digit, int newdigit)
+{
+    int res = number;
+    int lshift = MPIU_ipow(k, digit);
+    res -= MPIU_getdigit(k, number, digit) * lshift;
+    res += newdigit * lshift;
+    return res;
 }
 
 /* TODO with a modest amount of work in the handle allocator code we should be
