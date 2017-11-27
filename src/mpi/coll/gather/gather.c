@@ -23,6 +23,43 @@ cvars:
         send buffer size is < this value (in bytes)
         (See also: MPIR_CVAR_GATHER_VSMALL_MSG_SIZE)
 
+    - name        : MPIR_CVAR_GATHER_ALGORITHM_INTRA
+      category    : COLLECTIVE
+      type        : string
+      default     : auto
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : >-
+        Variable to select gather algorithm
+        auto - Internal algorithm selection
+        binomial - Force binomial algorithm
+
+    - name        : MPIR_CVAR_GATHER_ALGORITHM_INTER
+      category    : COLLECTIVE
+      type        : string
+      default     : auto
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : >-
+        Variable to select gather algorithm
+        auto - Internal algorithm selection
+
+    - name        : MPIR_CVAR_GATHER_DEVICE_COLLECTIVE
+      category    : COLLECTIVE
+      type        : boolean
+      default     : true
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : >-
+        If set to true, MPI_Gather will use allow the device to override the
+        default, MPIR-level collective algorithms. The device still has the
+        option to call the MPIR-level algorithms manually.
+        If set to false, the device-level gather function will not be
+        called.
+
 === END_MPI_T_CVAR_INFO_BLOCK ===
 */
 
@@ -276,17 +313,33 @@ int MPIR_Gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
         
     if (comm_ptr->comm_kind == MPIR_COMM_KIND__INTRACOMM) {
         /* intracommunicator */
-        mpi_errno = MPIR_Gather_intra(sendbuf, sendcount, sendtype,
+        switch (MPIR_Gather_alg_intra_choice) {
+            case MPIR_GATHER_ALG_INTRA_BINOMIAL:
+                mpi_errno = MPIR_Gather_binomial(sendbuf, sendcount, sendtype,
                                       recvbuf, recvcount, recvtype, root,
                                       comm_ptr, errflag);
-        if (mpi_errno) MPIR_ERR_POP(mpi_errno);
+                break;
+            case MPIR_GATHER_ALG_INTRA_AUTO:
+                MPL_FALLTHROUGH;
+            default:
+                mpi_errno = MPIR_Gather_intra(sendbuf, sendcount, sendtype,
+                                      recvbuf, recvcount, recvtype, root,
+                                      comm_ptr, errflag);
+                break;
+        }
     } else {
         /* intercommunicator */
-        mpi_errno = MPIR_Gather_inter(sendbuf, sendcount, sendtype,
+        switch (MPIR_Gather_alg_inter_choice) {
+            case MPIR_GATHER_ALG_INTER_AUTO:
+                MPL_FALLTHROUGH;
+            default:
+                mpi_errno = MPIR_Gather_inter(sendbuf, sendcount, sendtype,
                                       recvbuf, recvcount, recvtype, root,
                                       comm_ptr, errflag);
-        if (mpi_errno) MPIR_ERR_POP(mpi_errno);
+                break;
+        }
     }
+    if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 
  fn_exit:
     return mpi_errno;
@@ -447,7 +500,13 @@ int MPI_Gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
     /* ... body of routine ...  */
 
-    mpi_errno = MPID_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm_ptr, &errflag);
+    if (MPIR_CVAR_GATHER_DEVICE_COLLECTIVE && MPIR_CVAR_DEVICE_COLLECTIVES) {
+        mpi_errno = MPID_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount,
+                    recvtype, root, comm_ptr, &errflag);
+    } else {
+        mpi_errno = MPIR_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount,
+                    recvtype, root, comm_ptr, &errflag);
+    }
     if (mpi_errno) goto fn_fail;
         
     /* ... end of body of routine ... */

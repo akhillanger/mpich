@@ -23,6 +23,46 @@ cvars:
         the long message algorithm will be used if the operation is commutative
         and the send buffer size is >= this value (in bytes)
 
+    - name        : MPIR_CVAR_REDUCE_SCATTER_ALGORITHM_INTRA
+      category    : COLLECTIVE
+      type        : string
+      default     : auto
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : >-
+        Variable to select reduce_scatter algorithm
+        auto - Internal algorithm selection
+        noncomm - Force noncomm algorithm
+        recursive_doubling - Force recursive doubling algorithm
+        pairwise - Force pairwise algorithm
+        recursive_halving - Force recursive halving algorithm
+
+    - name        : MPIR_CVAR_REDUCE_SCATTTER_ALGORITHM_INTER
+      category    : COLLECTIVE
+      type        : string
+      default     : auto
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : >-
+        Variable to select reduce_scatter algorithm
+        auto - Internal algorithm selection
+
+    - name        : MPIR_CVAR_REDUCE_SCATTER_DEVICE_COLLECTIVE
+      category    : COLLECTIVE
+      type        : boolean
+      default     : true
+      class       : device
+      verbosity   : MPI_T_VERBOSITY_USER_BASIC
+      scope       : MPI_T_SCOPE_ALL_EQ
+      description : >-
+        If set to true, MPI_Redscat will use allow the device to override the
+        default, MPIR-level collective algorithms. The device still has the
+        option to call the MPIR-level algorithms manually.
+        If set to false, the device-level redscat function will not be
+        called.
+
 === END_MPI_T_CVAR_INFO_BLOCK ===
 */
 
@@ -255,15 +295,42 @@ int MPIR_Reduce_scatter(const void *sendbuf, void *recvbuf, const int recvcounts
         
     if (comm_ptr->comm_kind == MPIR_COMM_KIND__INTRACOMM) {
         /* intracommunicator */
-        mpi_errno = MPIR_Reduce_scatter_intra(sendbuf, recvbuf, recvcounts,
-                                              datatype, op, comm_ptr, errflag);
-        if (mpi_errno) MPIR_ERR_POP(mpi_errno);
+        switch (MPIR_Reduce_scatter_alg_intra_choice) {
+            case MPIR_REDUCE_SCATTER_ALG_INTRA_NONCOMM:
+                mpi_errno = MPIR_Reduce_scatter_noncomm(sendbuf, recvbuf,
+                            recvcounts, datatype, op, comm_ptr, errflag);
+                break;
+            case MPIR_REDUCE_SCATTER_ALG_INTRA_PAIRWISE:
+                mpi_errno = MPIR_Reduce_scatter_pairwise(sendbuf, recvbuf,
+                            recvcounts, datatype, op, comm_ptr, errflag);
+                break;
+            case MPIR_REDUCE_SCATTER_ALG_INTRA_RECURSIVE_HALVING:
+                mpi_errno = MPIR_Reduce_scatter_recursive_halving(sendbuf, recvbuf,
+                            recvcounts, datatype, op, comm_ptr, errflag);
+                break;
+            case MPIR_REDUCE_SCATTER_ALG_INTRA_RECURSIVE_DOUBLING:
+                mpi_errno = MPIR_Reduce_scatter_recursive_doubling(sendbuf, recvbuf,
+                            recvcounts, datatype, op, comm_ptr, errflag);
+                break;
+            case MPIR_REDUCE_SCATTER_ALG_INTRA_AUTO:
+                MPL_FALLTHROUGH;
+            default:
+                mpi_errno = MPIR_Reduce_scatter_intra(sendbuf, recvbuf,
+                            recvcounts, datatype, op, comm_ptr, errflag);
+                break;
+        }
     } else {
         /* intercommunicator */
-        mpi_errno = MPIR_Reduce_scatter_inter(sendbuf, recvbuf, recvcounts,
-                                              datatype, op, comm_ptr, errflag);
-        if (mpi_errno) MPIR_ERR_POP(mpi_errno);
+        switch (MPIR_Reduce_scatter_alg_intra_choice) {
+            case MPIR_REDUCE_SCATTER_ALG_INTER_AUTO:
+                MPL_FALLTHROUGH;
+            default:
+                mpi_errno = MPIR_Reduce_scatter_inter(sendbuf, recvbuf, recvcounts,
+                          datatype, op, comm_ptr, errflag);
+                break;
+        }
     }
+    if (mpi_errno) MPIR_ERR_POP(mpi_errno);
 
  fn_exit:
     return mpi_errno;
@@ -390,8 +457,13 @@ int MPI_Reduce_scatter(const void *sendbuf, void *recvbuf, const int recvcounts[
 
     /* ... body of routine ...  */
 
-    mpi_errno = MPID_Reduce_scatter(sendbuf, recvbuf, recvcounts,
+    if (MPIR_CVAR_REDUCE_SCATTER_DEVICE_COLLECTIVE && MPIR_CVAR_DEVICE_COLLECTIVES) {
+        mpi_errno = MPID_Reduce_scatter(sendbuf, recvbuf, recvcounts,
                                     datatype, op, comm_ptr, &errflag);
+    } else {
+        mpi_errno = MPIR_Reduce_scatter(sendbuf, recvbuf, recvcounts,
+                                    datatype, op, comm_ptr, &errflag);
+    }
     if (mpi_errno) goto fn_fail;
 
     /* ... end of body of routine ... */
