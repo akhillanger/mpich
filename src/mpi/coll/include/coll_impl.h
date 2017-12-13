@@ -24,6 +24,7 @@ typedef enum MPIR_Allgather_alg_intra_t {
 extern int MPIR_Allgather_alg_intra_choice;
 
 typedef enum MPIR_Allgather_alg_inter_t {
+    MPIR_ALLGATHER_ALG_INTER_GENERIC,
     MPIR_ALLGATHER_ALG_INTER_AUTO
 } MPIR_Allgather_alg_inter_t;
 extern int MPIR_Allgather_alg_inter_choice;
@@ -37,6 +38,7 @@ typedef enum MPIR_Allgatherv_alg_intra_t {
 extern int MPIR_Allgatherv_alg_intra_choice;
 
 typedef enum MPIR_Allgatherv_alg_inter_t {
+    MPIR_ALLGATHERV_ALG_INTER_GENERIC,
     MPIR_ALLGATHERV_ALG_INTER_AUTO
 } MPIR_Allgatherv_alg_inter_t;
 extern int MPIR_Allgatherv_alg_inter_choice;
@@ -49,6 +51,7 @@ typedef enum MPIR_Allreduce_alg_intra_t {
 extern int MPIR_Allreduce_alg_intra_choice;
 
 typedef enum MPIR_Allreduce_alg_inter_t {
+    MPIR_ALLREDUCE_ALG_INTER_GENERIC,
     MPIR_ALLREDUCE_ALG_INTER_AUTO
 } MPIR_Allreduce_alg_inter_t;
 extern int MPIR_Allreduce_alg_inter_choice;
@@ -63,6 +66,7 @@ typedef enum MPIR_Alltoall_alg_intra_t {
 extern int MPIR_Alltoall_alg_intra_choice;
 
 typedef enum MPIR_Alltoall_alg_inter_t {
+    MPIR_ALLTOALL_ALG_INTER_GENERIC,
     MPIR_ALLTOALL_ALG_INTER_AUTO
 } MPIR_Alltoall_alg_inter_t;
 extern int MPIR_Alltoall_alg_inter_choice;
@@ -75,6 +79,7 @@ typedef enum MPIR_Alltoallv_alg_intra_t {
 extern int MPIR_Alltoallv_alg_intra_choice;
 
 typedef enum MPIR_Alltoallv_alg_inter_t {
+    MPIR_ALLTOALLV_ALG_INTER_GENERIC,
     MPIR_ALLTOALLV_ALG_INTER_AUTO
 } MPIR_Alltoallv_alg_inter_t;
 extern int MPIR_Alltoallv_alg_inter_choice;
@@ -87,6 +92,7 @@ typedef enum MPIR_Alltoallw_alg_intra_t {
 extern int MPIR_Alltoallw_alg_intra_choice;
 
 typedef enum MPIR_Alltoallw_alg_inter_t {
+    MPIR_ALLTOALLW_ALG_INTER_GENERIC,
     MPIR_ALLTOALLW_ALG_INTER_AUTO
 } MPIR_Alltoallw_alg_inter_t;
 extern int MPIR_Alltoallw_alg_inter_choice;
@@ -98,6 +104,7 @@ typedef enum MPIR_Barrier_alg_intra_t {
 extern int MPIR_Barrier_alg_intra_choice;
 
 typedef enum MPIR_Barrier_alg_inter_t {
+    MPIR_BARRIER_ALG_INTER_GENERIC,
     MPIR_BARRIER_ALG_INTER_AUTO
 } MPIR_Barrier_alg_inter_t;
 extern int MPIR_Barrier_alg_inter_choice;
@@ -111,6 +118,7 @@ typedef enum MPIR_Bcast_alg_intra_t {
 extern int MPIR_Bcast_alg_intra_choice;
 
 typedef enum MPIR_Bcast_alg_inter_t {
+    MPIR_BCAST_ALG_INTER_GENERIC,
     MPIR_BCAST_ALG_INTER_AUTO
 } MPIR_Bcast_alg_inter_t;
 extern int MPIR_Bcast_alg_inter_choice;
@@ -128,6 +136,7 @@ typedef enum MPIR_Gather_alg_intra_t {
 extern int MPIR_Gather_alg_intra_choice;
 
 typedef enum MPIR_Gather_alg_inter_t {
+    MPIR_GATHER_ALG_INTER_GENERIC,
     MPIR_GATHER_ALG_INTER_AUTO
 } MPIR_Gather_alg_inter_t;
 extern int MPIR_Gather_alg_inter_choice;
@@ -153,6 +162,7 @@ typedef enum MPIR_Iallgather_alg_intra_t {
 extern int MPIR_Iallgather_alg_intra_choice;
 
 typedef enum MPIR_Iallgather_alg_inter_t {
+    MPIR_IALLGATHER_ALG_INTER_GENERIC,
     MPIR_IALLGATHER_ALG_INTER_AUTO
 } MPIR_Iallgather_alg_inter_t;
 extern int MPIR_Iallgather_alg_inter_choice;
@@ -166,6 +176,7 @@ typedef enum MPIR_Iallgatherv_alg_intra_t {
 extern int MPIR_Iallgatherv_alg_intra_choice;
 
 typedef enum MPIR_Iallgatherv_alg_inter_t {
+    MPIR_IALLGATHERV_ALG_INTER_GENERIC,
     MPIR_IALLGATHERV_ALG_INTER_AUTO
 } MPIR_Iallgatherv_alg_inter_t;
 extern int MPIR_Iallgatherv_alg_inter_choice;
@@ -179,6 +190,7 @@ typedef enum MPIR_Iallreduce_alg_intra_t {
 extern int MPIR_Iallreduce_alg_intra_choice;
 
 typedef enum MPIR_Iallreduce_alg_inter_t {
+    MPIR_IALLREDUCE_ALG_INTER_GENERIC,
     MPIR_IALLREDUCE_ALG_INTER_AUTO
 } MPIR_Iallreduce_alg_inter_t;
 extern int MPIR_Iallreduce_alg_inter_choice;
@@ -193,6 +205,7 @@ typedef enum MPIR_Ialltoall_alg_intra_t {
 extern int MPIR_Ialltoall_alg_intra_choice;
 
 typedef enum MPIR_Ialltoall_alg_inter_t {
+    MPIR_IALLTOALL_ALG_INTER_GENERIC,
     MPIR_IALLTOALL_ALG_INTER_AUTO
 } MPIR_Ialltoall_alg_inter_t;
 extern int MPIR_Ialltoall_alg_inter_choice;
@@ -376,6 +389,7 @@ typedef enum MPIR_Ireduce_alg_intra_t {
 extern int MPIR_Ireduce_alg_intra_choice;
 
 typedef enum MPIR_Ireduce_alg_inter_t {
+    MPIR_IREDUCE_ALG_INTER_GENERIC,
     MPIR_IREDUCE_ALG_INTER_AUTO
 } MPIR_Ireduce_alg_inter_t;
 extern int MPIR_Ireduce_alg_inter_choice;
@@ -393,6 +407,7 @@ typedef enum MPIR_Iscatter_alg_intra_t {
 extern int MPIR_Iscatter_alg_intra_choice;
 
 typedef enum MPIR_Iscatter_alg_inter_t {
+    MPIR_ISCATTER_ALG_INTER_GENERIC,
     MPIR_ISCATTER_ALG_INTER_AUTO
 } MPIR_Iscatter_alg_inter_t;
 extern int MPIR_Iscatter_alg_inter_choice;
@@ -479,6 +494,7 @@ typedef enum MPIR_Reduce_scatter_alg_intra_t {
 extern int MPIR_Reduce_scatter_alg_intra_choice;
 
 typedef enum MPIR_Reduce_scatter_alg_inter_t {
+    MPIR_REDUCE_SCATTER_ALG_INTER_GENERIC,
     MPIR_REDUCE_SCATTER_ALG_INTER_AUTO
 } MPIR_Reduce_scatter_alg_inter_t;
 extern int MPIR_Reduce_scatter_alg_inter_choice;
@@ -493,6 +509,7 @@ typedef enum MPIR_Reduce_scatter_block_alg_intra_t {
 extern int MPIR_Reduce_scatter_block_alg_intra_choice;
 
 typedef enum MPIR_Reduce_scatter_block_alg_inter_t {
+    MPIR_REDUCE_SCATTER_BLOCK_ALG_INTER_GENERIC,
     MPIR_REDUCE_SCATTER_BLOCK_ALG_INTER_AUTO
 } MPIR_Reduce_scatter_block_alg_inter_t;
 extern int MPIR_Reduce_scatter_block_alg_inter_choice;
@@ -505,6 +522,7 @@ typedef enum MPIR_Reduce_alg_intra_t {
 extern int MPIR_Reduce_alg_intra_choice;
 
 typedef enum MPIR_Reduce_alg_inter_t {
+    MPIR_REDUCE_ALG_INTER_GENERIC,
     MPIR_REDUCE_ALG_INTER_AUTO
 } MPIR_Reduce_alg_inter_t;
 extern int MPIR_Reduce_alg_inter_choice;
@@ -522,6 +540,7 @@ typedef enum MPIR_Scatter_alg_intra_t {
 extern int MPIR_Scatter_alg_intra_choice;
 
 typedef enum MPIR_Scatter_alg_inter_t {
+    MPIR_SCATTER_ALG_INTER_GENERIC,
     MPIR_SCATTER_ALG_INTER_AUTO
 } MPIR_Scatter_alg_inter_t;
 extern int MPIR_Scatter_alg_inter_choice;

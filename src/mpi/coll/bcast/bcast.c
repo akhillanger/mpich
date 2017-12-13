@@ -117,6 +117,7 @@ cvars:
       description : >-
         Variable to select bcast algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_BCAST_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -568,6 +569,9 @@ int MPIR_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPIR_Co
     } else {
         /* intercommunicator */
         switch (MPIR_Bcast_alg_inter_choice) {
+            case MPIR_BCAST_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Bcast_generic_inter( buffer, count, datatype, root, comm_ptr, errflag );
+                break;
             case MPIR_BCAST_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

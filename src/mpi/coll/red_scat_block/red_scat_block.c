@@ -10,7 +10,6 @@
    the implementation of MPI_Reduce_scatter from red_scat.c and replacing 
    recvcnts[i] with recvcount everywhere. */
 
-
 #include "mpiimpl.h"
 #include "coll_util.h"
 
@@ -43,6 +42,7 @@ cvars:
       description : >-
         Variable to select reduce_scatter_block algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_REDUCE_SCATTER_BLOCK_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -310,6 +310,10 @@ int MPIR_Reduce_scatter_block(const void *sendbuf, void *recvbuf,
     } else {
         /* intercommunicator */
         switch (MPIR_Reduce_scatter_block_alg_intra_choice) {
+            case MPIR_REDUCE_SCATTER_BLOCK_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Reduce_scatter_block_generic_inter(sendbuf, recvbuf, recvcount,
+                          datatype, op, comm_ptr, errflag);
+                break;
             case MPIR_REDUCE_SCATTER_BLOCK_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

@@ -34,6 +34,7 @@ cvars:
       description : >-
         Variable to select iallgatherv algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_IALLGATHERV_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -208,6 +209,10 @@ int MPIR_Iallgatherv_sched(const void *sendbuf, int sendcount, MPI_Datatype send
     } else {
         /* intercommunicator */
         switch (MPIR_Iallgatherv_alg_inter_choice) {
+            case MPIR_IALLGATHERV_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Iallgatherv_generic_inter_sched(sendbuf, sendcount, sendtype,
+                            recvbuf, recvcounts, displs, recvtype, comm_ptr, s);
+                break;
             case MPIR_IALLGATHERV_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

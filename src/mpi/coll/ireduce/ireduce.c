@@ -34,6 +34,7 @@ cvars:
       description : >-
         Variable to select ireduce algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_IREDUCE_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -272,6 +273,10 @@ int MPIR_Ireduce_sched(const void *sendbuf, void *recvbuf, int count, MPI_Dataty
     } else {
         /* intercommunicator */
         switch (MPIR_Ireduce_alg_inter_choice) {
+            case MPIR_IREDUCE_ALG_INTER_GENERIC:
+               mpi_errno = MPIR_Ireduce_generic_inter_sched(sendbuf, recvbuf, count,
+                           datatype, op, root, comm_ptr, s);
+               break;
             case MPIR_IREDUCE_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

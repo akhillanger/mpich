@@ -38,7 +38,7 @@ cvars:
         pairwise - Force pairwise algorithm
         recursive_halving - Force recursive halving algorithm
 
-    - name        : MPIR_CVAR_REDUCE_SCATTTER_ALGORITHM_INTER
+    - name        : MPIR_CVAR_REDUCE_SCATTER_ALGORITHM_INTER
       category    : COLLECTIVE
       type        : string
       default     : auto
@@ -48,6 +48,7 @@ cvars:
       description : >-
         Variable to select reduce_scatter algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_REDUCE_SCATTER_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -322,6 +323,10 @@ int MPIR_Reduce_scatter(const void *sendbuf, void *recvbuf, const int recvcounts
     } else {
         /* intercommunicator */
         switch (MPIR_Reduce_scatter_alg_intra_choice) {
+            case MPIR_REDUCE_SCATTER_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Reduce_scatter_generic_inter(sendbuf, recvbuf, recvcounts,
+                          datatype, op, comm_ptr, errflag);
+                break;
             case MPIR_REDUCE_SCATTER_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

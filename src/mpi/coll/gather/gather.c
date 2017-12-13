@@ -330,6 +330,11 @@ int MPIR_Gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
     } else {
         /* intercommunicator */
         switch (MPIR_Gather_alg_inter_choice) {
+            case MPIR_GATHER_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Gather_generic_inter(sendbuf, sendcount, sendtype,
+                                      recvbuf, recvcount, recvtype, root,
+                                      comm_ptr, errflag);
+                break;
             case MPIR_GATHER_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

@@ -32,6 +32,7 @@ cvars:
       description : >-
         Variable to select iscatter algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_ISCATTER_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -165,6 +166,10 @@ int MPIR_Iscatter_sched(const void *sendbuf, int sendcount, MPI_Datatype sendtyp
     } else {
         /* intercommunicator */
         switch (MPIR_Iscatter_alg_inter_choice) {
+            case MPIR_ISCATTER_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Iscatter_generic_inter_sched(sendbuf, sendcount, sendtype,
+                          recvbuf, recvcount, recvtype, root, comm_ptr, s);
+                break;
             case MPIR_ISCATTER_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

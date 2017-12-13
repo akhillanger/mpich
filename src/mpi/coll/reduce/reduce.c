@@ -67,6 +67,7 @@ cvars:
       description : >-
         Variable to select reduce algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_REDUCE_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -402,6 +403,10 @@ int MPIR_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype data
     } else {
         /* intercommunicator */
         switch (MPIR_Reduce_alg_inter_choice) {
+            case MPIR_REDUCE_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Reduce_generic_inter(sendbuf, recvbuf, count, datatype,
+                                      op, root, comm_ptr, errflag);
+                break;
             case MPIR_REDUCE_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

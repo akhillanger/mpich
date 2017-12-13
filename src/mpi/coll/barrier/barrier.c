@@ -42,6 +42,7 @@ cvars:
       description : >-
         Variable to select barrier algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_BARRIER_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -238,6 +239,9 @@ int MPIR_Barrier(MPIR_Comm *comm_ptr, MPIR_Errflag_t *errflag)
     } else {
         /* intercommunicator */
         switch (MPIR_Barrier_alg_inter_choice) {
+            case MPIR_BARRIER_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Barrier_generic_inter(comm_ptr, errflag);
+                break;
             case MPIR_BARRIER_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:

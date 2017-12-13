@@ -76,6 +76,7 @@ cvars:
       description : >-
         Variable to select allreduce algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_ALLREDUCE_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -396,6 +397,10 @@ int MPIR_Allreduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype d
      } else {
          /* intercommunicator */
          switch (MPIR_Allreduce_alg_inter_choice) {
+             case MPIR_ALLREDUCE_ALG_INTER_GENERIC:
+                  mpi_errno = MPIR_Allreduce_generic_inter(sendbuf, recvbuf, count, datatype, op,
+                              comm_ptr, errflag);
+                  break;
              case MPIR_ALLREDUCE_ALG_INTER_AUTO:
                  MPL_FALLTHROUGH;
              default:

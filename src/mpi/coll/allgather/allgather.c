@@ -59,6 +59,7 @@ cvars:
       description : >-
         Variable to select allgather algorithm
         auto - Internal algorithm selection
+        generic - Force generic algorithm
 
     - name        : MPIR_CVAR_ALLGATHER_DEVICE_COLLECTIVE
       category    : COLLECTIVE
@@ -265,6 +266,9 @@ int MPIR_Allgather(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
     } else {
         /* intercommunicator */
         switch (MPIR_Allgather_alg_inter_choice) {
+            case MPIR_ALLGATHER_ALG_INTER_GENERIC:
+                mpi_errno = MPIR_Allgather_generic_inter(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm_ptr, errflag);
+                break;
             case MPIR_ALLGATHER_ALG_INTER_AUTO:
                 MPL_FALLTHROUGH;
             default:
