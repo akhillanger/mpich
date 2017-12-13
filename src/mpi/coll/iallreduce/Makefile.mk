@@ -7,4 +7,5 @@ mpi_sources +=                                              \
 mpi_core_sources +=                                         \
     src/mpi/coll/iallreduce/iallreduce_naive.c              \
     src/mpi/coll/iallreduce/iallreduce_redscat_allgather.c  \
-    src/mpi/coll/iallreduce/iallreduce_recursive_doubling.c
+    src/mpi/coll/iallreduce/iallreduce_recursive_doubling.c \
+    src/mpi/coll/iallreduce/iallreduce_generic_inter.c

@@ -7,5 +7,6 @@ mpi_sources +=                     		\
 
 mpi_core_sources +=										\
 	src/mpi/coll/reduce/reduce_binomial.c				\
-	src/mpi/coll/reduce/reduce_redscat_gather.c
+	src/mpi/coll/reduce/reduce_redscat_gather.c			\
+	src/mpi/coll/reduce/reduce_generic_inter.c
 

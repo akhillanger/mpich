@@ -7,4 +7,5 @@ mpi_sources +=                     		\
 
 mpi_core_sources +=												\
 	src/mpi/coll/alltoallv/alltoallv_pairwise_sendrecv_replace.c	\
-	src/mpi/coll/alltoallv/alltoallv_scattered.c
+	src/mpi/coll/alltoallv/alltoallv_scattered.c					\
+	src/mpi/coll/alltoallv/alltoallv_generic_inter.c

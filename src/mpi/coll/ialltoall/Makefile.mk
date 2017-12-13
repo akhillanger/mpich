@@ -8,4 +8,5 @@ mpi_core_sources +=                             \
     src/mpi/coll/ialltoall/ialltoall_inplace.c  \
     src/mpi/coll/ialltoall/ialltoall_brucks.c   \
     src/mpi/coll/ialltoall/ialltoall_perm_sr.c  \
-    src/mpi/coll/ialltoall/ialltoall_pairwise.c
+    src/mpi/coll/ialltoall/ialltoall_pairwise.c \
+    src/mpi/coll/ialltoall/ialltoall_generic_inter.c

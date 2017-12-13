@@ -7,4 +7,6 @@ mpi_sources +=                                              \
 mpi_core_sources +=                                         \
     src/mpi/coll/iallgather/iallgather_recursive_doubling.c \
     src/mpi/coll/iallgather/iallgather_brucks.c             \
-    src/mpi/coll/iallgather/iallgather_ring.c
+    src/mpi/coll/iallgather/iallgather_ring.c               \
+    src/mpi/coll/iallgather/iallgather_generic_inter.c
+

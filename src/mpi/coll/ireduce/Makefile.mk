@@ -6,4 +6,5 @@ mpi_sources +=                                  \
 
 mpi_core_sources +=                             \
     src/mpi/coll/ireduce/ireduce_binomial.c		\
-    src/mpi/coll/ireduce/ireduce_redscat_gather.c
+    src/mpi/coll/ireduce/ireduce_redscat_gather.c \
+    src/mpi/coll/ireduce/ireduce_generic_inter.c

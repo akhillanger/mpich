@@ -8,4 +8,5 @@ mpi_sources +=                     		\
 mpi_core_sources +=											\
 	src/mpi/coll/allgatherv/allgatherv_recursive_doubling.c	\
 	src/mpi/coll/allgatherv/allgatherv_brucks.c				\
-	src/mpi/coll/allgatherv/allgatherv_ring.c
+	src/mpi/coll/allgatherv/allgatherv_ring.c				\
+	src/mpi/coll/allgatherv/allgatherv_generic_inter.c

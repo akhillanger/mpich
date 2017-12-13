@@ -483,8 +483,6 @@ fn_exit:
 #define FUNCNAME MPIR_Bcast_inter
 #undef FCNAME
 #define FCNAME MPL_QUOTE(FUNCNAME)
-
-/* Not PMPI_LOCAL because it is called in intercomm allgather */
 int MPIR_Bcast_inter ( 
     void *buffer, 
     int count, 
@@ -493,78 +491,10 @@ int MPIR_Bcast_inter (
     MPIR_Comm *comm_ptr,
     MPIR_Errflag_t *errflag)
 {
-/*  Intercommunicator broadcast.
-    Root sends to rank 0 in remote group. Remote group does local
-    intracommunicator broadcast.
-*/
-    int rank, mpi_errno;
-    int mpi_errno_ret = MPI_SUCCESS;
-    MPI_Status status;
-    MPIR_Comm *newcomm_ptr = NULL;
-    MPIR_FUNC_TERSE_STATE_DECL(MPID_STATE_MPIR_BCAST_INTER);
+    int mpi_errno = MPI_SUCCESS;
 
-    MPIR_FUNC_TERSE_ENTER(MPID_STATE_MPIR_BCAST_INTER);
+    mpi_errno = MPIR_Bcast_generic_inter(buffer, count, datatype, root, comm_ptr, errflag);
 
-
-    if (root == MPI_PROC_NULL)
-    {
-        /* local processes other than root do nothing */
-        mpi_errno = MPI_SUCCESS;
-    }
-    else if (root == MPI_ROOT)
-    {
-        /* root sends to rank 0 on remote group and returns */
-        mpi_errno =  MPIC_Send(buffer, count, datatype, 0,
-                                  MPIR_BCAST_TAG, comm_ptr, errflag);
-        if (mpi_errno) {
-            /* for communication errors, just record the error but continue */
-            *errflag = MPIR_ERR_GET_CLASS(mpi_errno);
-            MPIR_ERR_SET(mpi_errno, *errflag, "**fail");
-            MPIR_ERR_ADD(mpi_errno_ret, mpi_errno);
-        }
-    }
-    else
-    {
-        /* remote group. rank 0 on remote group receives from root */
-        
-        rank = comm_ptr->rank;
-        
-        if (rank == 0)
-        {
-            mpi_errno = MPIC_Recv(buffer, count, datatype, root,
-                                     MPIR_BCAST_TAG, comm_ptr, &status, errflag);
-            if (mpi_errno) {
-                /* for communication errors, just record the error but continue */
-                *errflag = MPIR_ERR_GET_CLASS(mpi_errno);
-                MPIR_ERR_SET(mpi_errno, *errflag, "**fail");
-                MPIR_ERR_ADD(mpi_errno_ret, mpi_errno);
-            }
-        }
-        
-        /* Get the local intracommunicator */
-        if (!comm_ptr->local_comm)
-            MPII_Setup_intercomm_localcomm( comm_ptr );
-
-        newcomm_ptr = comm_ptr->local_comm;
-
-        /* now do the usual broadcast on this intracommunicator
-           with rank 0 as root. */
-        mpi_errno = MPIR_Bcast_intra(buffer, count, datatype, 0, newcomm_ptr, errflag);
-        if (mpi_errno) {
-            /* for communication errors, just record the error but continue */
-            *errflag = MPIR_ERR_GET_CLASS(mpi_errno);
-            MPIR_ERR_SET(mpi_errno, *errflag, "**fail");
-            MPIR_ERR_ADD(mpi_errno_ret, mpi_errno);
-        }
-    }
-
-    MPIR_FUNC_TERSE_EXIT(MPID_STATE_MPIR_BCAST_INTER);
-    /* --BEGIN ERROR HANDLING-- */
-    if (mpi_errno_ret)
-        mpi_errno = mpi_errno_ret;
-    else if (*errflag != MPIR_ERR_NONE)
-        MPIR_ERR_SET(mpi_errno, MPI_ERR_OTHER, "**coll_fail");
-    /* --END ERROR HANDLING-- */
     return mpi_errno;
 }
 

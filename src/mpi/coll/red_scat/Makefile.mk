@@ -9,5 +9,6 @@ mpi_core_sources +=											\
 	src/mpi/coll/red_scat/red_scat_recursive_halving.c		\
 	src/mpi/coll/red_scat/red_scat_pairwise.c				\
 	src/mpi/coll/red_scat/red_scat_recursive_doubling.c		\
-	src/mpi/coll/red_scat/red_scat_noncomm.c
+	src/mpi/coll/red_scat/red_scat_noncomm.c				\
+	src/mpi/coll/red_scat/red_scat_generic_inter.c
 
