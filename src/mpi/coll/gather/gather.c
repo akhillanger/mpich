@@ -54,8 +54,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Gather will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Gather will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level gather function will not be
         called.
@@ -82,7 +82,7 @@ int MPI_Gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *
 #ifndef MPICH_MPI_FROM_PMPI
 #undef MPI_Gather
 #define MPI_Gather PMPI_Gather
-/* This is the default implementation of gather. The algorithm is:
+/* This is the machine-independent implementation of gather. The algorithm is:
    
    Algorithm: MPI_Gather
 

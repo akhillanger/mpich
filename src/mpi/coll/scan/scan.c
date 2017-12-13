@@ -31,8 +31,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Scan will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Scan will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level scan function will not be
         called.

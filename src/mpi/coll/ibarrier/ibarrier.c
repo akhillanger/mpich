@@ -42,8 +42,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Ibarrier will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Ibarrier will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level ibarrier function will not be
         called.
@@ -71,7 +71,7 @@ int MPI_Ibarrier(MPI_Comm comm, MPI_Request *request) __attribute__((weak,alias(
 
 /* any non-MPI functions go here, especially non-static ones */
 
-/* This is the default implementation of the barrier operation.  The
+/* This is the machine-independent implementation of the barrier operation.  The
    algorithm is:
 
    Algorithm: MPI_Ibarrier

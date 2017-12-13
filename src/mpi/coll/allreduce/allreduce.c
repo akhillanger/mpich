@@ -86,8 +86,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Allreduce will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Allreduce will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level allreduce function will not be
         called.
@@ -134,7 +134,7 @@ MPIR_Op_check_dtype_fn *MPIR_Op_check_dtype_table[] = {
     MPIR_REPLACE_check_dtype, MPIR_NO_OP_check_dtype }; 
 
 
-/* This is the default implementation of allreduce. The algorithm is:
+/* This is the machine-independent implementation of allreduce. The algorithm is:
    
    Algorithm: MPI_Allreduce
 

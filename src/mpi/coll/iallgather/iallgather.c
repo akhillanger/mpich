@@ -44,8 +44,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Iallgather will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Iallgather will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level iallgather function will not be
         called.
@@ -73,7 +73,7 @@ int MPI_Iallgather(const void *sendbuf, int sendcount, MPI_Datatype sendtype, vo
 #undef MPI_Iallgather
 #define MPI_Iallgather PMPI_Iallgather
 
-/* This is the default implementation of allgather. The algorithm is:
+/* This is the machine-independent implementation of allgather. The algorithm is:
 
    Algorithm: MPI_Allgather
 

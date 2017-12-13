@@ -77,8 +77,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Reduce will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Reduce will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level reduce function will not be
         called.
@@ -107,7 +107,7 @@ int MPI_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datat
 #define MPI_Reduce PMPI_Reduce
 
 
-/* This is the default implementation of reduce. The algorithm is:
+/* This is the machine-independent implementation of reduce. The algorithm is:
    
    Algorithm: MPI_Reduce
 

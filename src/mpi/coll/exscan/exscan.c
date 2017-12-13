@@ -31,8 +31,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Exscan will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Exscan will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level exscan function will not be
         called.
@@ -63,7 +63,7 @@ int MPI_Exscan(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datat
 /* NOTE: copied from red_scat.c, if we use this one more time we need to
  * refactor it into a common location */
 
-/* This is the default implementation of exscan. The algorithm is:
+/* This is the machine-independent implementation of exscan. The algorithm is:
    
    Algorithm: MPI_Exscan
 

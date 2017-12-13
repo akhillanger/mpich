@@ -52,8 +52,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Barrier will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Barrier will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level barrier function will not be
         called.
@@ -80,7 +80,7 @@ int MPI_Barrier(MPI_Comm comm) __attribute__((weak,alias("PMPI_Barrier")));
 #define MPI_Barrier PMPI_Barrier
 
 
-/* This is the default implementation of the barrier operation.  The
+/* This is the machine-independent implementation of the barrier operation.  The
    algorithm is:
    
    Algorithm: MPI_Barrier

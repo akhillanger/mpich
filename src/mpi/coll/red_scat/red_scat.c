@@ -58,8 +58,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_Redscat will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_Redscat will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level redscat function will not be
         called.
@@ -87,7 +87,7 @@ int MPI_Reduce_scatter(const void *sendbuf, void *recvbuf, const int recvcounts[
 #undef MPI_Reduce_scatter
 #define MPI_Reduce_scatter PMPI_Reduce_scatter
 
-/* This is the default implementation of reduce_scatter. The algorithm is:
+/* This is the machine-independent implementation of reduce_scatter. The algorithm is:
 
    Algorithm: MPI_Reduce_scatter
 

@@ -43,8 +43,8 @@ cvars:
       verbosity   : MPI_T_VERBOSITY_USER_BASIC
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
-        If set to true, MPI_scatterv will use allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        If set to true, MPI_scatterv will allow the device to override the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level scatterv function will not be
         called.
@@ -73,7 +73,7 @@ int MPI_Scatterv(const void *sendbuf, const int *sendcounts, const int *displs,
 #undef MPI_Scatterv
 #define MPI_Scatterv PMPI_Scatterv
 
-/* This is the default implementation of scatterv. The algorithm is:
+/* This is the machine-independent implementation of scatterv. The algorithm is:
    
    Algorithm: MPI_Scatterv
 

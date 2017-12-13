@@ -32,7 +32,7 @@ cvars:
       scope       : MPI_T_SCOPE_ALL_EQ
       description : >-
         If set to true, MPI_Iexscan will allow the device to override the
-        default, MPIR-level collective algorithms. The device still has the
+        MPIR-level collective algorithms. The device still has the
         option to call the MPIR-level algorithms manually.
         If set to false, the device-level iexscan function will not be
         called.
