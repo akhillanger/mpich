@@ -218,6 +218,27 @@ int MPII_Genutil_sched_irecv(void *buf,
     return vtx_id;
 }
 
+#undef FUNCNAME
+#define FUNCNAME MPII_Genutil_sched_vtcs_completion
+#undef FCNAME
+#define FCNAME MPL_QUOTE(FUNCNAME)
+int MPII_Genutil_sched_vtcs_completion(MPII_Genutil_sched_t * sched, int n_in_vtcs, int *in_vtcs)
+{
+    vtx_t *vtxp;
+    int vtx_id;
+
+    /* assign a new vertex */
+    vtx_id = MPII_Genutil_vtx_create(sched, &vtxp);
+
+    vtxp->vtx_kind = MPII_GENUTIL_VTX_KIND__VTCS_COMPLETION;
+    MPII_Genutil_vtx_add_dependencies(sched, vtx_id, n_in_vtcs, in_vtcs);
+
+    MPL_DBG_MSG_FMT(MPIR_DBG_COLL, VERBOSE,
+                    (MPL_DBG_FDEST, "Gentran: schedule [%d] vtcs_completion task \n", vtx_id));
+
+    return vtx_id;
+
+}
 
 #define FUNCNAME MPII_Genutil_sched_malloc
 #undef FCNAME

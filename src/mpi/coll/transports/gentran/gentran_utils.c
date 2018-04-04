@@ -131,6 +131,11 @@ static void vtx_issue(int vtxid, MPII_Genutil_vtx_t * vtxp, MPII_Genutil_sched_t
                     vtx_record_completion(vtxp, sched);
                 }
                 break;
+            case MPII_GENUTIL_VTX_KIND__VTCS_COMPLETION:{
+                    /* Nothin to do, just record completion */
+                    vtx_record_completion(vtxp, sched);
+                }
+                break;
         }
 
 #ifdef MPL_USE_DBG_LOGGING
