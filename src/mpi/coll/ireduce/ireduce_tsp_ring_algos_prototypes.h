@@ -21,7 +21,7 @@
 #define MPIR_TSP_Ireduce_sched_intra_ring                MPIR_TSP_NAMESPACE(Ireduce_sched_intra_ring)
 
 int MPIR_TSP_Ireduce_sched_intra_ring(const void *sendbuf, void *recvbuf, int count,
-                                      MPI_Datatype datatype, MPI_Op op, int root, int tag,
+                                      MPI_Datatype datatype, MPI_Op op, int root,
                                       MPIR_Comm * comm, int segsize, MPIR_TSP_sched_t * sched);
 int MPIR_TSP_Ireduce_intra_ring(const void *sendbuf, void *recvbuf, int count,
                                 MPI_Datatype datatype, MPI_Op op, int root, MPIR_Comm * comm,

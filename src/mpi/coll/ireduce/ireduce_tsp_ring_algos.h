@@ -22,7 +22,7 @@
 #undef FCNAME
 #define FCNAME MPL_QUOTE(FUNCNAME)
 int MPIR_TSP_Ireduce_sched_intra_ring(const void *sendbuf, void *recvbuf, int count,
-                                      MPI_Datatype datatype, MPI_Op op, int root, int tag,
+                                      MPI_Datatype datatype, MPI_Op op, int root,
                                       MPIR_Comm * comm, int maxbytes, MPIR_TSP_sched_t * sched)
 {
     int mpi_errno = MPI_SUCCESS;
@@ -44,6 +44,7 @@ int MPIR_TSP_Ireduce_sched_intra_ring(const void *sendbuf, void *recvbuf, int co
     void *recv_buffer;          /* Buffer in which data from neighboring rank is received */
     void *reduce_buffer;        /* Buffer in which reduced data is present */
     int recv_id, reduce_id;     /* Variables to store graph vertex ids */
+    int tag;
 
     MPIR_FUNC_VERBOSE_STATE_DECL(MPID_STATE_MPIR_TSP_IREDUCE_SCHED_INTRA_RING);
     MPIR_FUNC_VERBOSE_ENTER(MPID_STATE_MPIR_TSP_IREDUCE_SCHED_INTRA_RING);
@@ -123,6 +124,10 @@ int MPIR_TSP_Ireduce_sched_intra_ring(const void *sendbuf, void *recvbuf, int co
         int msgsize = (j == 0) ? chunk_size_floor : chunk_size_ceil;
         void *reduce_address = (char *) reduce_buffer + offset * extent;
 
+        /* For correctness, transport based collectives need to get the
+         * tag from the same pool as schedule based collectives */
+        MPIDU_Sched_next_tag(comm, &tag);
+
         if (!is_ring_leaf) {
             void *recv_address = (char *) recv_buffer + offset * extent;
             int src = (rank + 1) % size;
@@ -186,24 +191,19 @@ int MPIR_TSP_Ireduce_intra_ring(const void *sendbuf, void *recvbuf, int count,
                                 MPIR_Request ** req, int maxbytes)
 {
     int mpi_errno = MPI_SUCCESS;
-    int tag;
     MPIR_TSP_sched_t *sched;
     *req = NULL;
 
     MPIR_FUNC_VERBOSE_STATE_DECL(MPID_STATE_MPIR_TSP_IREDUCE_INTRA_RING);
     MPIR_FUNC_VERBOSE_ENTER(MPID_STATE_MPIR_TSP_IREDUCE_INTRA_RING);
 
-    /* For correctness, transport based collectives need to get the
-     * tag from the same pool as schedule based collectives */
-    MPIDU_Sched_next_tag(comm, &tag);
-
     /* generate the schedule */
     sched = MPL_malloc(sizeof(MPIR_TSP_sched_t), MPL_MEM_COLL);
-    MPIR_TSP_sched_create(sched, tag);
+    MPIR_TSP_sched_create(sched);
 
     /* schedule pipelined tree algo */
     mpi_errno =
-        MPIR_TSP_Ireduce_sched_intra_ring(sendbuf, recvbuf, count, datatype, op, root, tag, comm,
+        MPIR_TSP_Ireduce_sched_intra_ring(sendbuf, recvbuf, count, datatype, op, root, comm,
                                           maxbytes, sched);
     if (mpi_errno)
         MPIR_ERR_POP(mpi_errno);
