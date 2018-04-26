@@ -106,6 +106,7 @@ static void vtx_issue(int vtxid, MPII_Genutil_vtx_t * vtxp, MPII_Genutil_sched_t
                 break;
 
             case MPII_GENUTIL_VTX_KIND__REDUCE_LOCAL:{
+                    vtx_record_issue(sched, vtxp);
                     MPIR_Reduce_local(vtxp->u.reduce_local.inbuf,
                                       vtxp->u.reduce_local.inoutbuf,
                                       vtxp->u.reduce_local.count,
@@ -119,6 +120,7 @@ static void vtx_issue(int vtxid, MPII_Genutil_vtx_t * vtxp, MPII_Genutil_sched_t
                 break;
 
             case MPII_GENUTIL_VTX_KIND__LOCALCOPY:{
+                    vtx_record_issue(sched, vtxp);
                     MPIR_Localcopy(vtxp->u.localcopy.sendbuf,
                                    vtxp->u.localcopy.sendcount,
                                    vtxp->u.localcopy.sendtype,
