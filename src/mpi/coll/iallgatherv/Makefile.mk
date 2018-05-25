@@ -15,8 +15,11 @@
 mpi_sources +=                                              \
     src/mpi/coll/iallgatherv/iallgatherv.c
 
-mpi_core_sources +=                                           \
+mpi_core_sources +=                                         \
     src/mpi/coll/iallgatherv/iallgatherv_intra_recursive_doubling.c \
     src/mpi/coll/iallgatherv/iallgatherv_intra_brucks.c             \
     src/mpi/coll/iallgatherv/iallgatherv_intra_ring.c               \
-    src/mpi/coll/iallgatherv/iallgatherv_inter_remote_gather_local_bcast.c
+    src/mpi/coll/iallgatherv/iallgatherv_inter_remote_gather_local_bcast.c \
+    src/mpi/coll/iallgatherv/iallgatherv_gentran_algos.c                    \
+    src/mpi/coll/iallgatherv/iallgatherv_intra_recexch_distance_doubling.c    \
+    src/mpi/coll/iallgatherv/iallgatherv_intra_recexch_distance_halving.c
