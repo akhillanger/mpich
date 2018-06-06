@@ -36,26 +36,27 @@ int MPIR_TSP_Iallgather_sched_intra_recexch_data_exchange(int rank, int nranks, 
 
     /* get the partner with whom I should exchange data */
     partner = MPII_Recexchalgo_reverse_digits_step2(rank, nranks, k);
+    if (rank != partner) {
+        /* calculate offset and count of the data to be sent to the partner */
+        MPII_Recexchalgo_get_count_and_offset(rank, 0, k, nranks, &count, &offset);
+        send_offset = offset * recv_extent * recvcount;
+        MPL_DBG_MSG_FMT(MPIR_DBG_COLL, VERBOSE,
+                        (MPL_DBG_FDEST, "data exchange with %d send_offset %d count %d \n", partner,
+                         send_offset, count));
+        /* send my data to partner */
+        MPIR_TSP_sched_isend(((char *) recvbuf + send_offset), count * recvcount, recvtype, partner,
+                             tag, comm, sched, 0, NULL);
 
-    /* calculate offset and count of the data to be sent to the partner */
-    MPII_Recexchalgo_get_count_and_offset(rank, 0, k, nranks, &count, &offset);
-    send_offset = offset * recv_extent * recvcount;
-    MPL_DBG_MSG_FMT(MPIR_DBG_COLL, VERBOSE,
-                    (MPL_DBG_FDEST, "data exchange with %d send_offset %d count %d \n", partner,
-                     send_offset, count));
-    /* send my data to partner */
-    MPIR_TSP_sched_isend(((char *) recvbuf + send_offset), count * recvcount, recvtype, partner,
-                         tag, comm, sched, 0, NULL);
-
-    /* calculate offset and count of the data to be received from the partner */
-    MPII_Recexchalgo_get_count_and_offset(partner, 0, k, nranks, &count, &offset);
-    recv_offset = offset * recv_extent * recvcount;
-    MPL_DBG_MSG_FMT(MPIR_DBG_COLL, VERBOSE,
-                    (MPL_DBG_FDEST, "data exchange with %d recv_offset %d count %d \n", partner,
-                     recv_offset, count));
-    /* recv data from my partner */
-    MPIR_TSP_sched_irecv(((char *) recvbuf + recv_offset), count * recvcount, recvtype,
-                         partner, tag, comm, sched, 0, NULL);
+        /* calculate offset and count of the data to be received from the partner */
+        MPII_Recexchalgo_get_count_and_offset(partner, 0, k, nranks, &count, &offset);
+        recv_offset = offset * recv_extent * recvcount;
+        MPL_DBG_MSG_FMT(MPIR_DBG_COLL, VERBOSE,
+                        (MPL_DBG_FDEST, "data exchange with %d recv_offset %d count %d \n", partner,
+                         recv_offset, count));
+        /* recv data from my partner */
+        MPIR_TSP_sched_irecv(((char *) recvbuf + recv_offset), count * recvcount, recvtype,
+                             partner, tag, comm, sched, 0, NULL);
+    }
 
     MPIR_FUNC_VERBOSE_EXIT(MPID_STATE_MPIR_TSP_IALLGATHER_SCHED_INTRA_RECEXCH_DATA_EXCHANGE);
 

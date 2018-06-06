@@ -347,6 +347,9 @@ int MPII_Recexchalgo_reverse_digits_step2(int rank, int comm_size, int k)
     MPL_DBG_MSG_FMT(MPIR_DBG_COLL, VERBOSE,
                     (MPL_DBG_FDEST, "reverse_rank is %d\n", step2_reverse_rank));
 
+    MPL_free(digit);
+    MPL_free(digit_reverse);
+
     MPIR_FUNC_VERBOSE_EXIT(MPID_STATE_MPII_RECEXCHALGO_REVERSE_DIGITS);
 
     return step2_reverse_rank;
