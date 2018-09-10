@@ -14,6 +14,8 @@
 
 #include "ch4_impl.h"
 #include <../mpi/pt2pt/bsendutil.h>
+#include "tsp_gentran.h"
+#include "gentran_utils.h"
 
 #undef FUNCNAME
 #define FUNCNAME MPIDIG_mpi_startall
@@ -79,12 +81,19 @@ MPL_STATIC_INLINE_PREFIX int MPIDIG_mpi_startall(int count, MPIR_Request * reque
                 }
 
             case MPIDI_PTYPE_BCAST:
-                mpi_errno = MPIR_Ibcast(preq->u.persist.coll_args.bcast.buffer,
+                /* mpi_errno = MPIR_Ibcast(preq->u.persist.coll_args.bcast.buffer,
                                         preq->u.persist.coll_args.bcast.count,
                                         preq->u.persist.coll_args.bcast.datatype,
                                         preq->u.persist.coll_args.bcast.root,
                                         preq->u.persist.coll_args.bcast.comm,
-                                        &preq->u.persist.real_request);
+                                        &preq->u.persist.real_request);*/
+
+                /* start and register the schedule */
+                mpi_errno = MPII_Genutil_sched_start(preq->u.persist.sched,
+                                                     preq->u.persist.coll_args.bcast.comm,
+                                                     &preq->u.persist.real_request);
+                if (mpi_errno)
+                    MPIR_ERR_POP(mpi_errno);
 
                 break;
 
@@ -112,8 +121,11 @@ MPL_STATIC_INLINE_PREFIX int MPIDIG_mpi_startall(int count, MPIR_Request * reque
         MPIR_Datatype_release_if_not_builtin(MPIDI_CH4U_REQUEST(preq, datatype));
     }
 
+  fn_fail:
     MPIR_FUNC_VERBOSE_EXIT(MPID_STATE_MPIDIG_MPI_STARTALL);
     return mpi_errno;
+  fn_exit:
+    goto fn_fail;
 }
 
 #undef FUNCNAME

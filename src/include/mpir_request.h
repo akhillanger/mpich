@@ -197,6 +197,7 @@ struct MPIR_Request {
                     MPIR_Info *info;
                 } bcast;
             } coll_args;
+            MPII_Genutil_sched_t *sched;
         } persist;              /* for persistent request kinds, for example,
                                  * MPIR_REQUEST_KIND__PREQUEST_SEND, MPIR_REQUEST_KIND__PREQUEST_BCAST */
     } u;

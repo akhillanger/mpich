@@ -104,6 +104,8 @@ typedef struct {
     struct MPII_Genutil_vtx_t *issued_tail;
 
     int is_persistent;
+    /* list of vtcs with no incoming dependencies */
+    UT_array *start_vtcs;
 } MPII_Genutil_sched_t;
 
 typedef MPII_Genutil_vtx_t vtx_t;

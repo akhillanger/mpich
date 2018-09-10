@@ -36,6 +36,7 @@ int MPII_Genutil_sched_create(MPII_Genutil_sched_t * sched, int is_persistent)
     utarray_new(sched->vtcs, &vtx_t_icd, MPL_MEM_COLL);
 
     utarray_new(sched->buffers, &ut_ptr_icd, MPL_MEM_COLL);
+    utarray_new(sched->start_vtcs, &ut_int_icd, MPL_MEM_COLL);
 
     sched->issued_head = NULL;
     sched->issued_tail = NULL;
@@ -51,6 +52,9 @@ int MPII_Genutil_sched_create(MPII_Genutil_sched_t * sched, int is_persistent)
 #define FCNAME MPL_QUOTE(FUNCNAME)
 void MPII_Genutil_sched_free(MPII_Genutil_sched_t * sched)
 {
+    int i;
+    void **p;
+
     /* free up the sched resources */
     for (i = 0; i < sched->total_vtcs; i++) {
         vtx_t *vtx = (vtx_t *) utarray_eltptr(sched->vtcs, i);
@@ -69,6 +73,7 @@ void MPII_Genutil_sched_free(MPII_Genutil_sched_t * sched)
 
     utarray_free(sched->vtcs);
     utarray_free(sched->buffers);
+    utarray_free(sched->start_vtcs);
     MPL_free(sched);
 }
 

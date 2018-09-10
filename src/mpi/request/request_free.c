@@ -145,6 +145,7 @@ int MPI_Request_free(MPI_Request * request)
                 if (request_ptr->u.persist.real_request != NULL) {
                     MPIR_Request_free(request_ptr->u.persist.real_request);
                 }
+                MPII_Genutil_sched_free(request_ptr->u.persist.sched);
                 break;
 
             }

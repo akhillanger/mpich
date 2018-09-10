@@ -417,8 +417,16 @@ int MPII_Genutil_sched_poke(MPII_Genutil_sched_t * sched, int *is_complete, int 
             *made_progress = TRUE;
 
         /* Go over all the vertices and issue ready vertices */
-        for (i = 0; i < sched->total_vtcs; i++) {
-            vtx_issue(i, (vtx_t *) utarray_eltptr(sched->vtcs, i), sched);
+        if(sched->is_persistent) {
+            int num_start_vtcs = utarray_len(sched->start_vtcs);
+            for (i = 0; i < num_start_vtcs; i++) {
+                int vtx_id = *(int *) utarray_eltptr(sched->start_vtcs, i);
+                vtx_issue(vtx_id, (vtx_t *) utarray_eltptr(sched->vtcs, vtx_id), sched);
+            }
+        } else {
+            for (i = 0; i < sched->total_vtcs; i++) {
+                vtx_issue(i, (vtx_t *) utarray_eltptr(sched->vtcs, i), sched);
+            }
         }
 
         MPL_DBG_MSG_FMT(MPIR_DBG_COLL, VERBOSE,
@@ -518,4 +526,33 @@ int MPII_Genutil_sched_poke(MPII_Genutil_sched_t * sched, int *is_complete, int 
 
     MPIR_FUNC_VERBOSE_EXIT(MPID_STATE_MPII_GENUTIL_SCHED_POKE);
     return mpi_errno;
+}
+
+#undef FUNCNAME
+#define FUNCNAME MPII_Genutil_sched_reset
+#undef FCNAME
+#define FCNAME MPL_QUOTE(FUNCNAME)
+int MPII_Genutil_sched_reset(MPII_Genutil_sched_t * sched) {
+    sched->completed_vtcs = 0;
+    sched->issued_head = sched->issued_tail = NULL;
+    int i;
+    for (i = 0; i < sched->total_vtcs; i++) {
+        MPII_Genutil_vtx_t *vtx = (MPII_Genutil_vtx_t *) utarray_eltptr(sched->vtcs, i);
+        vtx->pending_dependencies = utarray_len(vtx->in_vtcs);
+        vtx->vtx_state = MPII_GENUTIL_VTX_STATE__INIT;
+    }
+}
+
+#undef FUNCNAME
+#define FUNCNAME MPII_Genutil_sched_optimize
+#undef FCNAME
+#define FCNAME MPL_QUOTE(FUNCNAME)
+int MPII_Genutil_sched_optimize(MPII_Genutil_sched_t * sched) {
+    int i;
+    for (i = 0; i < sched->total_vtcs; i++) {
+        MPII_Genutil_vtx_t *vtx = (MPII_Genutil_vtx_t *) utarray_eltptr(sched->vtcs, i);
+        if (vtx->pending_dependencies == 0) {
+            utarray_push_back(sched->start_vtcs, &i, MPL_MEM_COLL);
+        }
+    }
 }
