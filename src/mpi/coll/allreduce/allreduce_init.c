@@ -12,8 +12,8 @@
 #include "mpiimpl.h"
 #include "tsp_gentran.h"
 #include "gentran_utils.h"
-#include "iallreduce_tsp_recexch_algos_prototypes.h"
-#include "iallreduce_tsp_tree_algos_prototypes.h"
+#include "../iallreduce/iallreduce_tsp_recexch_algos_prototypes.h"
+#include "../iallreduce/iallreduce_tsp_tree_algos_prototypes.h"
 
 /* -- Begin Profiling Symbol Block for routine MPIX_Allreduce_init */
 #if defined(HAVE_PRAGMA_WEAK)
@@ -66,11 +66,51 @@ int MPIR_Allreduce_init(const void *sendbuf, void *recvbuf, int count, MPI_Datat
     sched = MPL_malloc(sizeof(MPII_Genutil_sched_t), MPL_MEM_COLL);
     MPII_Genutil_sched_create(sched, 1);
 
-    /* schedule pipelined tree algo */
-    mpi_errno = MPII_Gentran_Iallreduce_sched_intra_tree(sendbuf, recvbuf, count, datatype, op, comm_ptr,
-                                                     0, 2, 0, sched);
-    if (mpi_errno)
-        MPIR_ERR_POP(mpi_errno);
+    switch(MPIR_Iallreduce_intra_algo_choice) {
+        case MPIR_IALLREDUCE_INTRA_ALGO_GENTRAN_RECEXCH_SINGLE_BUFFER:
+            mpi_errno =
+                mpi_errno = MPII_Gentran_Iallreduce_sched_intra_recexch(sendbuf, recvbuf, count, datatype,
+                                                                        op, comm_ptr, MPIR_IALLREDUCE_RECEXCH_TYPE_SINGLE_BUFFER,
+                                                                        MPIR_CVAR_IALLREDUCE_RECEXCH_KVAL, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+        case MPIR_IALLREDUCE_INTRA_ALGO_GENTRAN_RECEXCH_MULTIPLE_BUFFER:
+            mpi_errno =
+                mpi_errno = MPII_Gentran_Iallreduce_sched_intra_recexch(sendbuf, recvbuf, count, datatype,
+                                                              op, comm_ptr, MPIR_IALLREDUCE_INTRA_ALGO_GENTRAN_RECEXCH_MULTIPLE_BUFFER,
+                                                              MPIR_CVAR_IALLREDUCE_RECEXCH_KVAL, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+        case MPIR_IALLREDUCE_INTRA_ALGO_GENTRAN_TREE_KARY:
+            mpi_errno =
+                MPII_Gentran_Iallreduce_sched_intra_tree(sendbuf, recvbuf, count, datatype,
+                                                op, comm_ptr, MPIR_TREE_TYPE_KARY,
+                                                MPIR_CVAR_IALLREDUCE_TREE_KVAL,
+                                                MPIR_CVAR_IALLREDUCE_TREE_PIPELINE_CHUNK_SIZE, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+        case MPIR_IALLREDUCE_INTRA_ALGO_GENTRAN_TREE_KNOMIAL:
+            mpi_errno =
+                MPII_Gentran_Iallreduce_sched_intra_tree(sendbuf, recvbuf, count, datatype,
+                                                   op, comm_ptr, MPIR_TREE_TYPE_KNOMIAL_1,
+                                                   MPIR_CVAR_IALLREDUCE_TREE_KVAL,
+                                                   MPIR_CVAR_IALLREDUCE_TREE_PIPELINE_CHUNK_SIZE, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+        default:
+             mpi_errno = MPII_Gentran_Iallreduce_sched_intra_tree(sendbuf, recvbuf, count, datatype,
+                                                op, comm_ptr, MPIR_TREE_TYPE_KARY,
+                                                MPIR_CVAR_IALLREDUCE_TREE_KVAL,
+                                                MPIR_CVAR_IALLREDUCE_TREE_PIPELINE_CHUNK_SIZE, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+    }
+
     MPII_Genutil_sched_optimize(sched);
     req->u.persist.sched = sched;
 

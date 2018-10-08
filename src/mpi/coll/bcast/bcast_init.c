@@ -10,8 +10,8 @@
  */
 
 #include "mpiimpl.h"
-#include "ibcast_tsp_tree_algos_prototypes.h"
-#include "ibcast_tsp_scatter_recexch_allgather_algos_prototypes.h"
+#include "../ibcast/ibcast_tsp_tree_algos_prototypes.h"
+#include "../ibcast/ibcast_tsp_scatter_recexch_allgather_algos_prototypes.h"
 
 /* -- Begin Profiling Symbol Block for routine MPIX_Bcast_init */
 #if defined(HAVE_PRAGMA_WEAK)
@@ -62,12 +62,33 @@ int MPIR_Bcast_init(void *buffer, int count, MPI_Datatype datatype, int root,
     /* generate the schedule */
     sched = MPL_malloc(sizeof(MPII_Genutil_sched_t), MPL_MEM_COLL);
     MPII_Genutil_sched_create(sched, 1);
-
-    /* schedule pipelined tree algo */
-    mpi_errno = MPII_Gentran_Ibcast_sched_intra_tree(buffer, count, datatype, root, comm_ptr,
-                                                     0, 2, 0, sched);
-    if (mpi_errno)
-        MPIR_ERR_POP(mpi_errno);
+    
+    switch(MPIR_Ibcast_intra_algo_choice) {
+        case MPIR_IBCAST_INTRA_ALGO_GENTRAN_TREE:
+            mpi_errno = MPII_Gentran_Ibcast_sched_intra_tree(buffer, count, datatype, root, comm_ptr,
+                                                             MPIR_Ibcast_tree_type, MPIR_CVAR_IBCAST_TREE_KVAL,
+                                                             MPIR_CVAR_IBCAST_TREE_PIPELINE_CHUNK_SIZE, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+        case MPIR_IBCAST_INTRA_ALGO_GENTRAN_SCATTER_RECEXCH_ALLGATHER:
+            mpi_errno = MPII_Gentran_Ibcast_sched_intra_scatter_recexch_allgather(buffer, count, datatype, root, comm_ptr, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+        case MPIR_IBCAST_INTRA_ALGO_GENTRAN_RING:
+            mpi_errno = MPII_Gentran_Ibcast_sched_intra_tree(buffer, count, datatype, root, comm_ptr, MPIR_TREE_TYPE_KARY, 1, MPIR_CVAR_IBCAST_RING_CHUNK_SIZE, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+        default:
+            mpi_errno = MPII_Gentran_Ibcast_sched_intra_tree(buffer, count, datatype, root, comm_ptr,
+                                                             MPIR_Ibcast_tree_type, MPIR_CVAR_IBCAST_TREE_KVAL,
+                                                             MPIR_CVAR_IBCAST_TREE_PIPELINE_CHUNK_SIZE, sched);
+            if (mpi_errno)
+                MPIR_ERR_POP(mpi_errno);
+            break;
+    }
     MPII_Genutil_sched_optimize(sched);
     req->u.persist.sched = sched;
 
