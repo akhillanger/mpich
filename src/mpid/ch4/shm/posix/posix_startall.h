@@ -78,6 +78,11 @@ static inline int MPIDI_POSIX_mpi_startall(int count, MPIR_Request * requests[])
                                                       preq->u.persist.coll_args.bcast.comm,
                                                       &preq->u.persist.real_request);
                 break;
+            case MPIR_REQUEST_KIND__PREQUEST_ALLREDUCE:
+                 mpi_errno = MPII_Genutil_sched_start(preq->u.persist.sched,
+                                                      preq->u.persist.coll_args.allreduce.comm,
+                                                      &preq->u.persist.real_request);
+                break;
             default:
                 MPIR_Assert(0);
                 break;

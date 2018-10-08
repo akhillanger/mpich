@@ -149,6 +149,21 @@ int MPI_Request_free(MPI_Request * request)
                 break;
 
             }
+        case MPIR_REQUEST_KIND__PREQUEST_ALLREDUCE:
+            {
+                MPIR_Datatype_release_if_not_builtin(request_ptr->u.persist.coll_args.
+                                                     allreduce.datatype);
+                int in_use;
+                MPIR_Comm_release_ref(request_ptr->u.persist.coll_args.allreduce.comm, &in_use);
+                /* If this is an active persistent request, we must also
+                 * release the partner request. */
+                if (request_ptr->u.persist.real_request != NULL) {
+                    MPIR_Request_free(request_ptr->u.persist.real_request);
+                }
+                MPII_Genutil_sched_free(request_ptr->u.persist.sched);
+                break;
+
+            }
         case MPIR_REQUEST_KIND__PREQUEST_RECV:
             {
                 /* If this is an active persistent request, we must also

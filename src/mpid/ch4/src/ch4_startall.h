@@ -61,6 +61,30 @@ MPL_STATIC_INLINE_PREFIX int MPID_Startall(int count, MPIR_Request * requests[])
             /* --END ERROR HANDLING-- */
             continue;
         }
+        if (req->kind == MPIR_REQUEST_KIND__PREQUEST_ALLREDUCE) {
+            MPII_Genutil_sched_reset(req->u.persist.sched);
+            mpi_errno = MPII_Genutil_sched_start(req->u.persist.sched,
+                                                 req->u.persist.coll_args.allreduce.comm,
+                                                 &req->u.persist.real_request);
+            if (mpi_errno == MPI_SUCCESS) {
+                req->status.MPI_ERROR = MPI_SUCCESS;
+                req->cc_ptr = &req->u.persist.real_request->cc;
+            }
+            /* --BEGIN ERROR HANDLING-- */
+            else {
+                /* If a failure occurs attempting to start the request, then we
+                 * assume that partner request was not created, and stuff
+                 * the error code in the persistent request.  The wait and test
+                 * routines will look at the error code in the persistent
+                 * request if a partner request is not present. */
+                req->u.persist.real_request = NULL;
+                req->status.MPI_ERROR = mpi_errno;
+                req->cc_ptr = &req->cc;
+                MPIR_cc_set(&req->cc, 0);
+            }
+            /* --END ERROR HANDLING-- */
+            continue;
+        }
         /* This is sub-optimal, can we do better? */
         if (MPIDI_CH4I_REQUEST_ANYSOURCE_PARTNER(req)) {
             mpi_errno = MPIDI_SHM_mpi_startall(1, &req);

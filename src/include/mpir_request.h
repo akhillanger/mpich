@@ -64,6 +64,7 @@ typedef enum MPIR_Request_kind_t {
     MPIR_REQUEST_KIND__PREQUEST_SEND,
     MPIR_REQUEST_KIND__PREQUEST_RECV,
     MPIR_REQUEST_KIND__PREQUEST_BCAST,
+    MPIR_REQUEST_KIND__PREQUEST_ALLREDUCE,
     MPIR_REQUEST_KIND__GREQUEST,
     MPIR_REQUEST_KIND__COLL,
     MPIR_REQUEST_KIND__MPROBE,  /* see NOTE-R1 */
@@ -196,10 +197,20 @@ struct MPIR_Request {
                     MPIR_Comm *comm;
                     MPIR_Info *info;
                 } bcast;
+                struct {
+                    const void *sendbuf;
+                    void *recvbuf;
+                    int count;
+                    MPI_Datatype datatype;
+                    MPI_Op op;
+                    MPIR_Comm *comm;
+                    MPIR_Info *info;
+                } allreduce;
             } coll_args;
             MPII_Genutil_sched_t *sched;
         } persist;              /* for persistent request kinds, for example,
-                                 * MPIR_REQUEST_KIND__PREQUEST_SEND, MPIR_REQUEST_KIND__PREQUEST_BCAST */
+                                 * MPIR_REQUEST_KIND__PREQUEST_SEND, MPIR_REQUEST_KIND__PREQUEST_BCAST,
+                                 * MPIR_REQUEST_KIND__PREQUEST_ALLREDUCE*/
     } u;
 
     /* Other, device-specific information */
@@ -218,7 +229,9 @@ static inline int MPIR_Request_is_persistent(MPIR_Request * req_ptr)
 {
     return (req_ptr->kind == MPIR_REQUEST_KIND__PREQUEST_SEND ||
             req_ptr->kind == MPIR_REQUEST_KIND__PREQUEST_RECV ||
-            req_ptr->kind == MPIR_REQUEST_KIND__PREQUEST_BCAST);
+            req_ptr->kind == MPIR_REQUEST_KIND__PREQUEST_BCAST||
+            req_ptr->kind == MPIR_REQUEST_KIND__PREQUEST_ALLREDUCE
+            );
 }
 
 /* Return whether a request is active.

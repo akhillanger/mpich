@@ -142,6 +142,7 @@ int MPIR_Request_completion_processing(MPIR_Request * request_ptr, MPI_Status * 
             }
 
         case MPIR_REQUEST_KIND__PREQUEST_BCAST:
+        case MPIR_REQUEST_KIND__PREQUEST_ALLREDUCE:
             {
                 if (request_ptr->u.persist.real_request != NULL) {
                     MPIR_Request *prequest_ptr = request_ptr->u.persist.real_request;

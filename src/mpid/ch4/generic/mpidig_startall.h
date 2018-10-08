@@ -97,6 +97,16 @@ MPL_STATIC_INLINE_PREFIX int MPIDIG_mpi_startall(int count, MPIR_Request * reque
 
                 break;
 
+            case MPIDI_PTYPE_ALLREDUCE:
+                /* start and register the schedule */
+                mpi_errno = MPII_Genutil_sched_start(preq->u.persist.sched,
+                                                     preq->u.persist.coll_args.allreduce.comm,
+                                                     &preq->u.persist.real_request);
+                if (mpi_errno)
+                    MPIR_ERR_POP(mpi_errno);
+
+                break;
+
             default:
                 mpi_errno = MPIR_Err_create_code(MPI_SUCCESS, MPIR_ERR_FATAL, __FUNCTION__,
                                                  __LINE__, MPI_ERR_INTERN, "**ch3|badreqtype",
@@ -152,4 +162,27 @@ MPL_STATIC_INLINE_PREFIX int MPIDIG_mpi_bcast_init(void *buffer, int count, MPI_
     goto fn_exit;
 }
 
+#undef FUNCNAME
+#define FUNCNAME MPIDIG_mpi_allreduce_init
+#undef FCNAME
+#define FCNAME MPL_QUOTE(FUNCNAME)
+MPL_STATIC_INLINE_PREFIX int MPIDIG_mpi_allreduce_init(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype,
+                                                       MPI_Op op, MPIR_Comm * comm_ptr,
+                                                       MPIR_Info * info_ptr, MPIR_Request ** request)
+{
+    int mpi_errno = MPI_SUCCESS;
+
+    MPIR_FUNC_VERBOSE_STATE_DECL(MPID_STATE_MPIDIG_MPI_ALLREDUCE_INIT);
+    MPIR_FUNC_VERBOSE_ENTER(MPID_STATE_MPIDIG_MPI_ALLREDUCE_INIT);
+
+    mpi_errno = MPIR_Allreduce_init(sendbuf, recvbuf, count, datatype, op, comm_ptr, info_ptr, request);
+    MPIDI_CH4U_REQUEST((*request), p_type) = MPIDI_PTYPE_ALLREDUCE;
+
+    MPIR_FUNC_VERBOSE_EXIT(MPID_STATE_MPIDIG_MPI_ALLREDUCE_INIT);
+
+  fn_exit:
+    return mpi_errno;
+  fn_fail:
+    goto fn_exit;
+}
 #endif /* MPIDIG_STARTALL_H_INCLUDED */

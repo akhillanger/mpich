@@ -39,6 +39,8 @@ EXPORTS
     MPI_Bcast
     PMPIX_Bcast_init
     MPIX_Bcast_init
+    PMPIX_Allreduce_init
+    MPIX_Allreduce_init
     PMPI_Bsend
     MPI_Bsend
     PMPI_Bsend_init
