@@ -24,7 +24,7 @@
 #define FCNAME MPL_QUOTE(FUNCNAME)
 int MPIR_TSP_Ireduce_scatter_block_sched_intra_recexch(const void *sendbuf, void *recvbuf,
                                                        int recvcount, MPI_Datatype datatype,
-                                                       MPI_Op op, int tag, MPIR_Comm * comm, int k,
+                                                       MPI_Op op, MPIR_Comm * comm, int k,
                                                        MPIR_TSP_sched_t * sched)
 {
     int mpi_errno = MPI_SUCCESS;
@@ -42,6 +42,7 @@ int MPIR_TSP_Ireduce_scatter_block_sched_intra_recexch(const void *sendbuf, void
     int dtcopy_id = -1, send_id = -1, recv_id = -1, reduce_id = -1, step1_id = -1;
     int nvtcs, vtcs[2];
     void *tmp_recvbuf = NULL, *tmp_results = NULL;
+    int tag;
 
     MPIR_FUNC_VERBOSE_STATE_DECL(MPID_STATE_MPIR_TSP_IREDUCE_SCATTER_BLOCK_SCHED_INTRA_RECEXCH);
     MPIR_FUNC_VERBOSE_ENTER(MPID_STATE_MPIR_TSP_IREDUCE_SCATTER_BLOCK_SCHED_INTRA_RECEXCH);
@@ -49,6 +50,12 @@ int MPIR_TSP_Ireduce_scatter_block_sched_intra_recexch(const void *sendbuf, void
     if (recvcount == 0) {
         return mpi_errno;
     }
+
+    /* For correctness, transport based collectives need to get the
+     * tag from the same pool as schedule based collectives */
+    mpi_errno = MPIR_Sched_next_tag(comm, &tag);
+    if (mpi_errno)
+        MPIR_ERR_POP(mpi_errno);
 
     is_inplace = (sendbuf == MPI_IN_PLACE);
     nranks = MPIR_Comm_size(comm);
@@ -203,6 +210,8 @@ int MPIR_TSP_Ireduce_scatter_block_sched_intra_recexch(const void *sendbuf, void
     MPIR_FUNC_VERBOSE_EXIT(MPID_STATE_MPIR_TSP_IREDUCE_SCATTER_BLOCK_SCHED_INTRA_RECEXCH);
 
     return mpi_errno;
+  fn_fail:
+    goto fn_exit;
 }
 
 
@@ -216,7 +225,6 @@ int MPIR_TSP_Ireduce_scatter_block_intra_recexch(const void *sendbuf, void *recv
                                                  MPIR_Request ** req, int k)
 {
     int mpi_errno = MPI_SUCCESS;
-    int tag;
     MPIR_TSP_sched_t *sched;
 
     MPIR_FUNC_VERBOSE_STATE_DECL(MPID_STATE_MPIR_TSP_IREDUCE_SCATTER_BLOCK_INTRA_RECEXCH);
@@ -229,15 +237,9 @@ int MPIR_TSP_Ireduce_scatter_block_intra_recexch(const void *sendbuf, void *recv
     MPIR_Assert(sched != NULL);
     MPIR_TSP_sched_create(sched);
 
-    /* For correctness, transport based collectives need to get the
-     * tag from the same pool as schedule based collectives */
-    mpi_errno = MPIR_Sched_next_tag(comm, &tag);
-    if (mpi_errno)
-        MPIR_ERR_POP(mpi_errno);
-
     mpi_errno =
         MPIR_TSP_Ireduce_scatter_block_sched_intra_recexch(sendbuf, recvbuf, recvcount, datatype,
-                                                           op, tag, comm, k, sched);
+                                                           op, comm, k, sched);
     if (mpi_errno)
         MPIR_ERR_POP(mpi_errno);
 
